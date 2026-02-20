@@ -1,0 +1,24 @@
+{
+  "name": "zilol-native",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A next-generation rendering framework for React Native using fine-grained reactivity and Skia",
+  "workspaces": [
+    "packages/*",
+    "components",
+    "navigation",
+    "example",
+    "benchmarks"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
+  }
+}

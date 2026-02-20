@@ -1,0 +1,57 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "lib": [
+            "ES2022"
+        ],
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "resolveJsonModule": true,
+        "declaration": true,
+        "declarationMap": true,
+        "sourceMap": true,
+        "composite": true
+    },
+    "references": [
+        {
+            "path": "./packages/runtime"
+        },
+        {
+            "path": "./packages/nodes"
+        },
+        {
+            "path": "./packages/layout"
+        },
+        {
+            "path": "./packages/renderer"
+        },
+        {
+            "path": "./packages/gestures"
+        },
+        {
+            "path": "./packages/animation"
+        },
+        {
+            "path": "./packages/platform"
+        },
+        {
+            "path": "./packages/accessibility"
+        },
+        {
+            "path": "./packages/image"
+        },
+        {
+            "path": "./packages/devtools"
+        },
+        {
+            "path": "./packages/components"
+        },
+        {
+            "path": "./packages/navigation"
+        }
+    ]
+}
