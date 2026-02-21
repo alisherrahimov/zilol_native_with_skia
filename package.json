@@ -4,11 +4,7 @@
   "private": true,
   "description": "A next-generation rendering framework for React Native using fine-grained reactivity and Skia",
   "workspaces": [
-    "packages/*",
-    "components",
-    "navigation",
-    "example",
-    "benchmarks"
+    "packages/*"
   ],
   "scripts": {
     "build": "turbo run build",

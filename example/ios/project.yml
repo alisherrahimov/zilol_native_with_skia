@@ -1,0 +1,96 @@
+name: ZilolNative
+options:
+  bundleIdPrefix: com.zilol
+  deploymentTarget:
+    iOS: "15.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    CLANG_CXX_LANGUAGE_STANDARD: c++17
+    SWIFT_OBJC_BRIDGING_HEADER: ZilolNative/ZilolNative-Bridging-Header.h
+    GCC_PREPROCESSOR_DEFINITIONS:
+      - $(inherited)
+      - SK_METAL=1
+      - SK_GANESH=1
+
+targets:
+  ZilolNative:
+    type: application
+    platform: iOS
+    deploymentTarget: "15.0"
+    configFiles:
+      Debug: Pods/Target Support Files/Pods-ZilolNative/Pods-ZilolNative.debug.xcconfig
+      Release: Pods/Target Support Files/Pods-ZilolNative/Pods-ZilolNative.release.xcconfig
+
+    sources:
+      # Swift files
+      - path: ZilolNative
+        excludes:
+          - "cpp/**"
+        type: group
+
+      # iOS-specific C++ (Metal renderer, bridge)
+      - path: ZilolNative/cpp
+        type: group
+        compilerFlags: "-std=c++17"
+
+      # Shared C++ core
+      - path: ../../packages/cpp
+        type: group
+        name: SharedCpp
+        compilerFlags: "-std=c++17"
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.zilol.native
+        INFOPLIST_FILE: ZilolNative/Info.plist
+        CODE_SIGN_STYLE: Automatic
+        SWIFT_VERSION: "5.0"
+        ENABLE_BITCODE: NO
+        CLANG_CXX_LANGUAGE_STANDARD: c++17
+        # Header search paths for shared C++ and Skia/Yoga/Hermes
+        HEADER_SEARCH_PATHS:
+          - $(inherited)
+          - $(SRCROOT)/../../packages/cpp
+          - $(SRCROOT)/../../vendor/skia
+          - $(SRCROOT)/../../vendor/skia/modules
+          - $(SRCROOT)/Pods/Headers/Public
+          - $(SRCROOT)/../../vendor/hermes/include
+          - $(SRCROOT)/../../vendor/yoga/include
+        OTHER_LDFLAGS:
+          - $(inherited)
+          - -framework Metal
+          - -framework MetalKit
+          - -framework QuartzCore
+          - -framework UIKit
+          - -lc++
+          - -lhermes
+          - -lyogacore
+        LIBRARY_SEARCH_PATHS:
+          - $(inherited)
+          - $(SRCROOT)/../../vendor/hermes/lib/iphonesimulator
+          - $(SRCROOT)/../../vendor/yoga/lib/iphonesimulator
+
+    info:
+      path: ZilolNative/Info.plist
+      properties:
+        CFBundleDisplayName: Zilol
+        CFBundleDevelopmentRegion: en
+        CFBundleExecutable: $(EXECUTABLE_NAME)
+        CFBundleIdentifier: $(PRODUCT_BUNDLE_IDENTIFIER)
+        CFBundleInfoDictionaryVersion: "6.0"
+        CFBundleName: $(PRODUCT_NAME)
+        CFBundlePackageType: APPL
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        LSRequiresIPhoneOS: true
+        UILaunchStoryboardName: ""
+        UIRequiredDeviceCapabilities:
+          - armv7
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIApplicationSupportsIndirectInputEvents: true
+        # Enable ProMotion 120Hz on supported iPhones
+        CADisableMinimumFrameDurationOnPhone: true

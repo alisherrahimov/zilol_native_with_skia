@@ -1,0 +1,13 @@
+{
+  "name": "zilol-native-example",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "bundle": "node build.mjs",
+    "bundle:watch": "node build.mjs --watch",
+    "bundle:prod": "node build.mjs --minify"
+  },
+  "devDependencies": {
+    "esbuild": "^0.21.0"
+  }
+}

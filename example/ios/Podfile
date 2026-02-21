@@ -1,0 +1,24 @@
+platform :ios, '15.0'
+use_frameworks! :linkage => :static
+
+target 'ZilolNative' do
+  # ── Hermes JS Engine ──────────────────────────────────────────────────
+  # Built from source (github.com/facebook/hermes) — see vendor/hermes/
+  # Linked directly via project.yml, no pod needed.
+  # ── Yoga Layout Engine ────────────────────────────────────────────────
+  # Built from source (github.com/facebook/yoga) — see vendor/yoga/
+  # Linked directly via project.yml, no pod needed.
+
+  # ── Skia Rendering ────────────────────────────────────────────────────
+  # Local podspec pointing to prebuilt xcframeworks in vendor/skia/
+  pod 'ZilolSkia', :path => '../../'
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+    end
+  end
+end
