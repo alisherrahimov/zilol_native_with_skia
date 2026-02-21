@@ -190,6 +190,16 @@ export interface SkiaNodeProps {
   horizontal?: boolean;
   bounces?: boolean;
   showsScrollIndicator?: boolean;
+  scrollEnabled?: boolean;
+  pagingEnabled?: boolean;
+  snapToInterval?: number;
+  decelerationRate?: "normal" | "fast" | number;
+  contentWidth?: number;
+  contentHeight?: number;
+  onScroll?: (offset: { x: number; y: number }) => void;
+  onScrollEnd?: (offset: { x: number; y: number }) => void;
+  onScrollBeginDrag?: () => void;
+  onScrollEndDrag?: () => void;
 
   // -- Canvas --
   onDraw?: (canvas: unknown) => void;

@@ -15,6 +15,7 @@
       "@zilol-native/layout": ["../packages/layout/src/index.ts"],
       "@zilol-native/renderer": ["../packages/renderer/src/index.ts"],
       "@zilol-native/platform": ["../packages/platform/src/index.ts"],
+      "@zilol-native/gestures": ["../packages/gestures/src/index.ts"],
       "@zilol-native/components": ["../packages/components/src/index.ts"]
     }
   },

@@ -24,6 +24,7 @@ const aliases = {
   "@zilol-native/layout": path.join(packagesDir, "layout/src/index.ts"),
   "@zilol-native/renderer": path.join(packagesDir, "renderer/src/index.ts"),
   "@zilol-native/platform": path.join(packagesDir, "platform/src/index.ts"),
+  "@zilol-native/gestures": path.join(packagesDir, "gestures/src/index.ts"),
   "@zilol-native/components": path.join(packagesDir, "components/src/index.ts"),
 };
 

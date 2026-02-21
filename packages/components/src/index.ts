@@ -43,6 +43,7 @@ export { View, ViewBuilder } from "./View";
 export { Text, TextBuilder } from "./Text";
 export { Pressable, PressableBuilder } from "./Pressable";
 export { Image, ImageBuilder } from "./Image";
+export { ScrollView, ScrollViewBuilder } from "./ScrollView";
 
 // Base class (for extending custom components)
 export { ComponentBase } from "./ComponentBase";

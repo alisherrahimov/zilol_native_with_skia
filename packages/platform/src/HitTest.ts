@@ -92,6 +92,7 @@ function hitTestNode(node: SkiaNode, point: Point): SkiaNode | null {
  */
 function isTouchable(node: SkiaNode): boolean {
   return !!(
+    node.type === "scroll" ||
     node.props.onPress ||
     node.props.onPressIn ||
     node.props.onPressOut ||
