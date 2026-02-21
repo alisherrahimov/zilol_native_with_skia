@@ -8,7 +8,7 @@
  * so you can see WHICH parts of the UI re-render on state changes.
  */
 
-import type { SkiaNode, Rect } from "@zilol-native/nodes";
+import type { SkiaNode, Rect, SkiaNodeProps } from "@zilol-native/nodes";
 import type { CommandExecutor } from "../pipeline/DisplayList";
 import { intersects } from "../pipeline/DamageRect";
 import { drawView } from "./drawView";
@@ -135,15 +135,32 @@ export function drawNode(
 
   // ── Debug overlay: highlight dirty nodes ──────────────────
   if (_showRedraws && node.dirty && bounds.width > 0 && bounds.height > 0) {
+    const br =
+      typeof node.props.borderRadius === "number"
+        ? (node.props.borderRadius as number)
+        : 0;
     // Draw a semi-transparent colored rectangle over the dirty node
-    executor({
-      type: "drawRect",
-      x: bounds.x,
-      y: bounds.y,
-      width: bounds.width,
-      height: bounds.height,
-      color: DEBUG_COLORS[_debugColorIndex],
-    });
+    if (br > 0) {
+      executor({
+        type: "drawRRect",
+        x: bounds.x,
+        y: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
+        rx: br,
+        ry: br,
+        color: DEBUG_COLORS[_debugColorIndex],
+      });
+    } else {
+      executor({
+        type: "drawRect",
+        x: bounds.x,
+        y: bounds.y,
+        width: bounds.width,
+        height: bounds.height,
+        color: DEBUG_COLORS[_debugColorIndex],
+      });
+    }
     // Draw a bright border to make it easier to spot
     executor({
       type: "drawRRectStroke",
@@ -151,8 +168,8 @@ export function drawNode(
       y: bounds.y,
       width: bounds.width,
       height: bounds.height,
-      rx: 0,
-      ry: 0,
+      rx: br,
+      ry: br,
       color: DEBUG_COLORS[_debugColorIndex].replace("0.25", "0.8"),
       strokeWidth: 2,
     });

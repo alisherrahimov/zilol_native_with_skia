@@ -43,7 +43,7 @@ export class ImageBuilder extends ComponentBase {
           this.node.setProp("source" as any, imageProxy);
           // Trigger a re-render by marking dirty
           if (this.node.markDirty) {
-            this.node.markDirty();
+            this.node.markDirty("prop");
           }
         }
       });

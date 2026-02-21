@@ -10,6 +10,18 @@
         "vitest": "^1.6.0",
       },
     },
+    "packages/components": {
+      "name": "@zilol-native/components",
+      "version": "0.1.0",
+      "dependencies": {
+        "@zilol-native/nodes": "workspace:*",
+        "@zilol-native/runtime": "workspace:*",
+      },
+      "devDependencies": {
+        "typescript": "^5.4.0",
+        "vitest": "^1.6.0",
+      },
+    },
     "packages/layout": {
       "name": "@zilol-native/layout",
       "version": "0.1.0",
@@ -181,6 +193,8 @@
     "@vitest/spy": ["@vitest/spy@1.6.1", "", { "dependencies": { "tinyspy": "^2.2.0" } }, "sha512-MGcMmpGkZebsMZhbQKkAf9CX5zGvjkBTqf8Zx3ApYWXr3wG+QvEu2eXWfnIIWYSJExIp4V9FCKDEeygzkYrXMw=="],
 
     "@vitest/utils": ["@vitest/utils@1.6.1", "", { "dependencies": { "diff-sequences": "^29.6.3", "estree-walker": "^3.0.3", "loupe": "^2.3.7", "pretty-format": "^29.7.0" } }, "sha512-jOrrUvXM4Av9ZWiG1EajNto0u96kWAhJ1LmPmJhXXQx/32MecEKd10pOLYgS2BQx1TgkGhloPU1ArDW2vvaY6g=="],
+
+    "@zilol-native/components": ["@zilol-native/components@workspace:packages/components"],
 
     "@zilol-native/layout": ["@zilol-native/layout@workspace:packages/layout"],
 

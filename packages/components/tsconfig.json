@@ -19,6 +19,9 @@
     },
     "references": [
         {
+            "path": "../platform"
+        },
+        {
             "path": "../runtime"
         },
         {
@@ -26,7 +29,8 @@
         }
     ],
     "include": [
-        "src/**/*.ts"
+        "src/**/*.ts",
+        "../platform/src/SkiaJSI.d.ts"
     ],
     "exclude": [
         "__tests__",
