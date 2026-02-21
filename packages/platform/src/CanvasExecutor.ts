@@ -60,15 +60,29 @@ export function createCanvasExecutor(
         );
         break;
 
-      case "drawText":
+      case "drawText": {
+        let drawX = command.x;
+        if (
+          command.textAlign &&
+          command.layoutWidth &&
+          command.textAlign !== "left"
+        ) {
+          const measured = __skiaMeasureText(command.text, command.fontSize, 0);
+          if (command.textAlign === "center") {
+            drawX += (command.layoutWidth - measured.width) / 2;
+          } else if (command.textAlign === "right") {
+            drawX += command.layoutWidth - measured.width;
+          }
+        }
         canvas.drawText(
           command.text,
-          command.x,
+          drawX,
           command.y,
           command.color,
           command.fontSize,
         );
         break;
+      }
 
       case "drawShadow":
         canvas.drawShadow(
@@ -104,6 +118,16 @@ export function createCanvasExecutor(
         canvas.restore();
         break;
 
+      case "saveLayerAlpha":
+        canvas.saveLayerAlpha(
+          command.x,
+          command.y,
+          command.width,
+          command.height,
+          command.alpha,
+        );
+        break;
+
       case "translate":
         canvas.translate(command.dx, command.dy);
         break;
@@ -113,8 +137,13 @@ export function createCanvasExecutor(
         break;
 
       case "drawImage":
-        // Image drawing is handled separately by the platform layer
-        // since it requires async image loading and SkImage management.
+        canvas.drawImage(
+          command.image as any,
+          command.x,
+          command.y,
+          command.width,
+          command.height,
+        );
         break;
 
       default: {

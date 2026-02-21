@@ -1,25 +1,13 @@
 /**
  * ZilolApp.ts — Application bootstrap and lifecycle management.
  *
- * This is the entry point that wires together:
+ * Wires together:
  * - Runtime (signals / reactive)
  * - SkiaNode tree
  * - Yoga layout bridge (C++ via JSI)
  * - Render pipeline (display list → Skia canvas)
  * - Event dispatch (touch → hit test → handlers)
- * - Frame scheduling (vsync-driven)
- *
- * @example
- * ```ts
- * import { runApp } from '@zilol-native/platform';
- *
- * runApp(() => {
- *   const root = new SkiaNode("view");
- *   root.setProp("backgroundColor", "#FFFFFF");
- *   root.setProp("flex", 1);
- *   return root;
- * });
- * ```
+ * - Frame scheduling (vsync-driven, on-demand)
  */
 
 import { SkiaNode, dirtyTracker } from "@zilol-native/nodes";
@@ -28,7 +16,7 @@ import {
   syncLayoutResults,
   setTextMeasurer,
 } from "@zilol-native/layout";
-import { RenderLoop } from "@zilol-native/renderer";
+import { drawNode, _advanceDebugColor } from "@zilol-native/renderer";
 import { EventDispatcher } from "./EventDispatch";
 import { createCanvasExecutor } from "./CanvasExecutor";
 import {
@@ -68,8 +56,6 @@ export interface ZilolAppInstance {
   rootNode: SkiaNode;
   /** The Yoga layout bridge. */
   yogaBridge: YogaBridge;
-  /** The render loop. */
-  renderLoop: RenderLoop;
   /** The event dispatcher. */
   eventDispatcher: EventDispatcher;
   /** Screen dimensions. */
@@ -93,12 +79,12 @@ let _currentApp: ZilolAppInstance | null = null;
  *
  * This is the main entry point. It:
  * 1. Initializes the platform adapter
- * 2. Creates a root SkiaNode
+ * 2. Creates a root SkiaNode sized to the screen
  * 3. Runs the component function to build the tree
  * 4. Sets up the Yoga layout bridge
- * 5. Connects the render loop to the Skia surface
+ * 5. Connects the Skia canvas for rendering
  * 6. Registers touch event handlers
- * 7. Starts the vsync-driven render loop
+ * 7. Starts the on-demand vsync-driven render loop
  *
  * @param buildTree - Function that builds and returns the root SkiaNode tree
  * @param options - Configuration options
@@ -115,9 +101,17 @@ export function runApp(
   // 2. Get screen dimensions
   const screenDimensions = adapter.getScreenDimensions();
 
-  // 3. Set up text measurer if provided
+  // 3. Set up text measurer for Yoga layout
   if (options.textMeasurer) {
     setTextMeasurer(options.textMeasurer);
+  } else {
+    // Default: use Skia's native text measurement via JSI
+    setTextMeasurer(
+      (text, fontSize, _fontFamily, _fontWeight, maxWidth, widthMode) => {
+        const constraintWidth = widthMode === 0 /* Undefined */ ? 0 : maxWidth;
+        return __skiaMeasureText(text, fontSize, constraintWidth);
+      },
+    );
   }
 
   // 4. Create root node and build tree
@@ -132,27 +126,7 @@ export function runApp(
   const yogaBridge = new YogaBridge();
   attachTreeToYoga(rootNode, yogaBridge);
 
-  // 6. Get Skia surface and create canvas executor
-  const surfaceProxy = __skiaGetSurface();
-  const canvas = surfaceProxy.getCanvas();
-  const executor = createCanvasExecutor(canvas);
-
-  // 7. Create render loop
-  const renderLoop = new RenderLoop();
-  const bgColor = options.backgroundColor ?? "#FFFFFF";
-
-  // Wrap the render loop to handle frame scheduling
-  renderLoop.start(
-    surfaceProxy as any, // SkSurface interface
-    rootNode,
-    yogaBridge,
-    (command) => {
-      // Before first draw command, clear with background color
-      executor(command);
-    },
-  );
-
-  // 8. Set up event dispatch
+  // 6. Set up event dispatch
   const eventDispatcher = new EventDispatcher();
   eventDispatcher.setRoot(rootNode);
 
@@ -160,34 +134,92 @@ export function runApp(
     eventDispatcher.handleTouch(phase, x, y, pointerId);
   });
 
-  // 9. Start vsync-driven frame loop
+  // 7. Render pipeline
+  // NOTE: Metal creates a NEW surface + canvas per frame (beginFrame → endFrame),
+  // so we must re-acquire the canvas on every frame, not cache it.
+  const bgColor = options.backgroundColor ?? "#FFFFFF";
+  const pixelRatio = screenDimensions.scale;
+  const layoutWidth = screenDimensions.width;
+  const layoutHeight = screenDimensions.height;
   let frameId: number | null = null;
 
-  function onFrame(timestamp: number): void {
-    if (!_currentApp) return;
+  /**
+   * Single frame lifecycle:
+   *   1. Acquire the current frame's canvas from the GPU surface
+   *   2. Layout pass (Yoga in logical points)
+   *   3. Scale canvas by pixel ratio for Retina
+   *   4. Clear canvas with background color
+   *   5. Draw the full node tree
+   *   6. Restore canvas state
+   */
+  function renderFrame(): void {
+    // Acquire THIS frame's surface + canvas (Metal creates new ones per frame)
+    const proxy = __skiaGetSurface();
+    if (proxy == null) {
+      // Surface not ready yet — retry on next vsync
+      frameId = adapter.requestAnimationFrame(renderFrame);
+      return;
+    }
+    const canvas = proxy.getCanvas();
+    if (canvas == null) {
+      frameId = adapter.requestAnimationFrame(renderFrame);
+      return;
+    }
+    const executor = createCanvasExecutor(canvas);
 
-    // Clear canvas
-    canvas.clear(bgColor);
+    try {
+      // Layout in logical points
+      yogaBridge.calculateLayout(layoutWidth, layoutHeight);
+      syncLayoutResults(rootNode, yogaBridge);
 
-    // Render frame
-    renderLoop.renderFrame();
+      // Scale canvas: logical points → physical pixels
+      canvas.save();
+      canvas.scale(pixelRatio, pixelRatio);
 
-    // Schedule next frame
-    frameId = adapter.requestAnimationFrame(onFrame);
+      // Clear
+      canvas.clear(bgColor);
+
+      // Draw full tree
+      const fullRect = {
+        x: 0,
+        y: 0,
+        width: layoutWidth,
+        height: layoutHeight,
+      };
+      // Advance debug color (no-op when debug is off)
+      _advanceDebugColor();
+      drawNode(rootNode, fullRect, executor);
+
+      // Restore (actual GPU flush is handled by native endFrame)
+      canvas.restore();
+    } catch (e: any) {
+      // Attempt recovery: restore canvas to avoid state corruption
+      try {
+        canvas.restore();
+      } catch (_) {}
+    }
+
+    // Mark frame complete
+    frameId = null;
+    dirtyTracker.flush();
   }
 
-  // Register with DirtyTracker so the first dirty signal starts rendering
-  dirtyTracker.onFrameNeeded(() => {
-    if (frameId === null) {
-      frameId = adapter.requestAnimationFrame(onFrame);
-    }
-  });
+  // Schedule a frame on the next vsync (deduplicates multiple requests)
+  function scheduleFrame(): void {
+    if (frameId !== null) return;
+    frameId = adapter.requestAnimationFrame(renderFrame);
+  }
 
-  // 10. Create app instance
+  // Initial frame — draws the first content
+  scheduleFrame();
+
+  // Re-render when signals change
+  dirtyTracker.onFrameNeeded(scheduleFrame);
+
+  // 8. Create app instance
   const app: ZilolAppInstance = {
     rootNode,
     yogaBridge,
-    renderLoop,
     eventDispatcher,
     screenDimensions,
     destroy() {
@@ -195,7 +227,6 @@ export function runApp(
         adapter.cancelAnimationFrame(frameId);
         frameId = null;
       }
-      renderLoop.stop();
       yogaBridge.destroy();
       eventDispatcher.reset();
       _currentApp = null;

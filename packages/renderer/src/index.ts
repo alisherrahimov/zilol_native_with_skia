@@ -45,7 +45,15 @@ export {
 export type { CommandExecutor, PlatformViewFrame } from "./pipeline";
 
 // Draw
-export { drawNode, drawView, drawText, drawImage, drawScroll } from "./draw";
+export {
+  drawNode,
+  drawView,
+  drawText,
+  drawImage,
+  drawScroll,
+  setShowRedraws,
+  _advanceDebugColor,
+} from "./draw";
 
 // Paint
 export {

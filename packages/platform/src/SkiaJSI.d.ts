@@ -40,6 +40,15 @@ interface SkiaImageProxy {
   isValid(): boolean;
 }
 
+/**
+ * Asynchronously load an image from a URL.
+ * The callback receives the loaded image proxy, or undefined on failure.
+ */
+declare function __skiaLoadImageFromURL(
+  url: string,
+  callback: (image: SkiaImageProxy | undefined) => void,
+): void;
+
 // ---------------------------------------------------------------------------
 // Text measurement
 // ---------------------------------------------------------------------------
@@ -271,3 +280,19 @@ declare function __getSafeAreaInsets(): {
 
 /** Get status bar height. */
 declare function __getStatusBarHeight(): number;
+
+// ---------------------------------------------------------------------------
+// Timers (registered by ZilolRuntime.cpp)
+// ---------------------------------------------------------------------------
+
+declare function setTimeout(callback: () => void, delayMs?: number): number;
+declare function clearTimeout(id: number): void;
+declare function setInterval(callback: () => void, intervalMs: number): number;
+declare function clearInterval(id: number): void;
+
+// ---------------------------------------------------------------------------
+// Bundle resource path
+// ---------------------------------------------------------------------------
+
+/** Get the app bundle resource directory path (e.g. for locating images). */
+declare function __getBundleResourcePath(): string | undefined;

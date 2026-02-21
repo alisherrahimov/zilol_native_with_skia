@@ -129,6 +129,7 @@ export type DrawCommand =
   | DrawShadowCommand
   | ClipRRectCommand
   | SaveCommand
+  | SaveLayerAlphaCommand
   | RestoreCommand
   | TranslateCommand
   | ClearCommand;
@@ -172,6 +173,8 @@ export interface DrawTextCommand {
   y: number;
   color: string;
   fontSize: number;
+  textAlign?: "left" | "center" | "right";
+  layoutWidth?: number;
 }
 
 export interface DrawImageCommand {
@@ -224,4 +227,13 @@ export interface TranslateCommand {
 export interface ClearCommand {
   type: "clear";
   color: string;
+}
+
+export interface SaveLayerAlphaCommand {
+  type: "saveLayerAlpha";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  alpha: number;
 }

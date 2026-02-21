@@ -240,6 +240,23 @@ export class YogaBridge {
       __yogaSetPosition(handle, EDGE_LEFT, props.left as number);
 
     // --- Padding ---
+    if (props.padding !== undefined) {
+      const p = props.padding as number;
+      __yogaSetPadding(handle, EDGE_TOP, p);
+      __yogaSetPadding(handle, EDGE_RIGHT, p);
+      __yogaSetPadding(handle, EDGE_BOTTOM, p);
+      __yogaSetPadding(handle, EDGE_LEFT, p);
+    }
+    if (props.paddingHorizontal !== undefined) {
+      const p = props.paddingHorizontal as number;
+      __yogaSetPadding(handle, EDGE_LEFT, p);
+      __yogaSetPadding(handle, EDGE_RIGHT, p);
+    }
+    if (props.paddingVertical !== undefined) {
+      const p = props.paddingVertical as number;
+      __yogaSetPadding(handle, EDGE_TOP, p);
+      __yogaSetPadding(handle, EDGE_BOTTOM, p);
+    }
     if (props.paddingTop !== undefined)
       __yogaSetPadding(handle, EDGE_TOP, props.paddingTop as number);
     if (props.paddingRight !== undefined)
@@ -250,6 +267,23 @@ export class YogaBridge {
       __yogaSetPadding(handle, EDGE_LEFT, props.paddingLeft as number);
 
     // --- Margin ---
+    if (props.margin !== undefined) {
+      const m = props.margin as number;
+      __yogaSetMargin(handle, EDGE_TOP, m);
+      __yogaSetMargin(handle, EDGE_RIGHT, m);
+      __yogaSetMargin(handle, EDGE_BOTTOM, m);
+      __yogaSetMargin(handle, EDGE_LEFT, m);
+    }
+    if (props.marginHorizontal !== undefined) {
+      const m = props.marginHorizontal as number;
+      __yogaSetMargin(handle, EDGE_LEFT, m);
+      __yogaSetMargin(handle, EDGE_RIGHT, m);
+    }
+    if (props.marginVertical !== undefined) {
+      const m = props.marginVertical as number;
+      __yogaSetMargin(handle, EDGE_TOP, m);
+      __yogaSetMargin(handle, EDGE_BOTTOM, m);
+    }
     if (props.marginTop !== undefined)
       __yogaSetMargin(handle, EDGE_TOP, props.marginTop as number);
     if (props.marginRight !== undefined)

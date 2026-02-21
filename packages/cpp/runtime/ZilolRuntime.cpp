@@ -28,6 +28,8 @@
 #include <functional>
 #include <mutex>
 #include <cstdio>
+#include <chrono>
+#include <thread>
 
 using namespace facebook;
 
@@ -54,6 +56,27 @@ static double sVsyncRate = 0;       // display link ticks per second
 static double sLastFPSTimestamp = 0;
 static int sFPSFrameCount = 0;      // rendered frames in window
 static int sVsyncTickCount = 0;     // total vsync ticks in window
+
+// Timer support (setTimeout / setInterval)
+struct TimerEntry {
+    int id;
+    std::shared_ptr<jsi::Function> callback;
+    double fireTimeMs;     // absolute time when this timer should fire
+    double intervalMs;     // 0 = setTimeout (one-shot), >0 = setInterval (repeating)
+    bool cancelled = false;
+};
+static std::mutex sTimerMutex;
+static int sNextTimerId = 1;
+static std::vector<TimerEntry> sTimers;
+
+static double currentTimeMs() {
+    auto now = std::chrono::steady_clock::now();
+    return std::chrono::duration<double, std::milli>(now.time_since_epoch()).count();
+}
+
+// Microtask queue (for async callbacks from background threads)
+static std::mutex sMicrotaskMutex;
+static std::vector<std::function<void(jsi::Runtime&)>> sMicrotasks;
 
 // ---------------------------------------------------------------------------
 // Initialize
@@ -180,7 +203,94 @@ void initialize(std::unique_ptr<skia::SkiaRenderer> renderer) {
                 return jsi::Value(sVsyncRate);
             }));
 
+    // 4. Register timers — setTimeout / clearTimeout / setInterval / clearInterval
+    //    Timers are drained during onVsync, so they run on the JS thread.
+
+    // setTimeout(callback, delayMs) → timerId
+    rt.global().setProperty(rt, "setTimeout",
+        jsi::Function::createFromHostFunction(rt,
+            jsi::PropNameID::forAscii(rt, "setTimeout"), 2,
+            [](jsi::Runtime &rt, const jsi::Value &,
+               const jsi::Value *args, size_t count) -> jsi::Value {
+                if (count < 1 || !args[0].isObject() ||
+                    !args[0].asObject(rt).isFunction(rt)) {
+                    return jsi::Value::undefined();
+                }
+                double delayMs = (count >= 2) ? args[1].asNumber() : 0;
+                auto fn = std::make_shared<jsi::Function>(
+                    args[0].asObject(rt).asFunction(rt));
+                int id;
+                {
+                    std::lock_guard<std::mutex> lock(sTimerMutex);
+                    id = sNextTimerId++;
+                    sTimers.push_back({id, fn, currentTimeMs() + delayMs, 0});
+                }
+                return jsi::Value(id);
+            }));
+
+    // clearTimeout(id)
+    rt.global().setProperty(rt, "clearTimeout",
+        jsi::Function::createFromHostFunction(rt,
+            jsi::PropNameID::forAscii(rt, "clearTimeout"), 1,
+            [](jsi::Runtime &, const jsi::Value &,
+               const jsi::Value *args, size_t count) -> jsi::Value {
+                if (count < 1) return jsi::Value::undefined();
+                int id = static_cast<int>(args[0].asNumber());
+                std::lock_guard<std::mutex> lock(sTimerMutex);
+                for (auto &t : sTimers) {
+                    if (t.id == id) { t.cancelled = true; break; }
+                }
+                return jsi::Value::undefined();
+            }));
+
+    // setInterval(callback, intervalMs) → timerId
+    rt.global().setProperty(rt, "setInterval",
+        jsi::Function::createFromHostFunction(rt,
+            jsi::PropNameID::forAscii(rt, "setInterval"), 2,
+            [](jsi::Runtime &rt, const jsi::Value &,
+               const jsi::Value *args, size_t count) -> jsi::Value {
+                if (count < 2 || !args[0].isObject() ||
+                    !args[0].asObject(rt).isFunction(rt)) {
+                    return jsi::Value::undefined();
+                }
+                double intervalMs = args[1].asNumber();
+                if (intervalMs <= 0) intervalMs = 1; // minimum 1ms
+                auto fn = std::make_shared<jsi::Function>(
+                    args[0].asObject(rt).asFunction(rt));
+                int id;
+                {
+                    std::lock_guard<std::mutex> lock(sTimerMutex);
+                    id = sNextTimerId++;
+                    sTimers.push_back({id, fn, currentTimeMs() + intervalMs, intervalMs});
+                }
+                return jsi::Value(id);
+            }));
+
+    // clearInterval(id)
+    rt.global().setProperty(rt, "clearInterval",
+        jsi::Function::createFromHostFunction(rt,
+            jsi::PropNameID::forAscii(rt, "clearInterval"), 1,
+            [](jsi::Runtime &, const jsi::Value &,
+               const jsi::Value *args, size_t count) -> jsi::Value {
+                if (count < 1) return jsi::Value::undefined();
+                int id = static_cast<int>(args[0].asNumber());
+                std::lock_guard<std::mutex> lock(sTimerMutex);
+                for (auto &t : sTimers) {
+                    if (t.id == id) { t.cancelled = true; break; }
+                }
+                return jsi::Value::undefined();
+            }));
+
     fprintf(stdout, "[ZilolRuntime] Initialized — Hermes + JSI ready\n");
+}
+
+// ---------------------------------------------------------------------------
+// Microtask queue
+// ---------------------------------------------------------------------------
+
+void queueMicrotask(std::function<void(jsi::Runtime&)> task) {
+    std::lock_guard<std::mutex> lock(sMicrotaskMutex);
+    sMicrotasks.push_back(std::move(task));
 }
 
 // ---------------------------------------------------------------------------
@@ -244,6 +354,60 @@ void onVsync(double timestampMs) {
         sFPSFrameCount = 0;
         sVsyncTickCount = 0;
         sLastFPSTimestamp = nowSec;
+    }
+
+    // ── Drain ready timers ──────────────────────────────────────
+    {
+        double nowMs = currentTimeMs();
+        std::vector<TimerEntry> ready;
+        {
+            std::lock_guard<std::mutex> lock(sTimerMutex);
+            // Partition: fire ready timers, keep the rest
+            std::vector<TimerEntry> remaining;
+            remaining.reserve(sTimers.size());
+            for (auto &t : sTimers) {
+                if (t.cancelled) continue;
+                if (t.fireTimeMs <= nowMs) {
+                    ready.push_back(t);
+                    // If interval, reschedule
+                    if (t.intervalMs > 0) {
+                        remaining.push_back({t.id, t.callback,
+                            nowMs + t.intervalMs, t.intervalMs, false});
+                    }
+                } else {
+                    remaining.push_back(std::move(t));
+                }
+            }
+            sTimers = std::move(remaining);
+        }
+        // Fire callbacks outside the lock
+        for (auto &t : ready) {
+            try {
+                t.callback->call(*sRuntime);
+            } catch (const jsi::JSError &e) {
+                fprintf(stderr, "[ZilolRuntime] TIMER ERROR: %s\n", e.what());
+            } catch (const std::exception &e) {
+                fprintf(stderr, "[ZilolRuntime] TIMER ERROR: %s\n", e.what());
+            }
+        }
+    }
+
+    // ── Drain microtask queue ──────────────────────────────────
+    {
+        std::vector<std::function<void(jsi::Runtime&)>> tasks;
+        {
+            std::lock_guard<std::mutex> lock(sMicrotaskMutex);
+            std::swap(tasks, sMicrotasks);
+        }
+        for (auto &task : tasks) {
+            try {
+                task(*sRuntime);
+            } catch (const jsi::JSError &e) {
+                fprintf(stderr, "[ZilolRuntime] MICROTASK ERROR: %s\n", e.what());
+            } catch (const std::exception &e) {
+                fprintf(stderr, "[ZilolRuntime] MICROTASK ERROR: %s\n", e.what());
+            }
+        }
     }
 
     // Drain frame callbacks — each is called once, then removed

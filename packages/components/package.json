@@ -1,0 +1,13 @@
+{
+  "name": "@zilol-native/components",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": { "build": "tsc", "test": "vitest run", "clean": "rm -rf dist" },
+  "dependencies": {
+    "@zilol-native/nodes": "workspace:*",
+    "@zilol-native/runtime": "workspace:*"
+  },
+  "devDependencies": { "typescript": "^5.4.0", "vitest": "^1.6.0" }
+}

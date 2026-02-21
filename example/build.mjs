@@ -23,6 +23,8 @@ const aliases = {
   "@zilol-native/nodes": path.join(packagesDir, "nodes/src/index.ts"),
   "@zilol-native/layout": path.join(packagesDir, "layout/src/index.ts"),
   "@zilol-native/renderer": path.join(packagesDir, "renderer/src/index.ts"),
+  "@zilol-native/platform": path.join(packagesDir, "platform/src/index.ts"),
+  "@zilol-native/components": path.join(packagesDir, "components/src/index.ts"),
 };
 
 // esbuild plugin to resolve workspace packages from source
@@ -43,7 +45,7 @@ const isMinify = args.includes("--minify");
 
 /** @type {import('esbuild').BuildOptions} */
 const buildOptions = {
-  entryPoints: [path.join(__dirname, "src/index.ts")],
+  entryPoints: [path.join(__dirname, "app/index.ts")],
   outfile: path.join(__dirname, "ios/ZilolNative/index.bundle.js"),
   bundle: true,
   format: "iife",

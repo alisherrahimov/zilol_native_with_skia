@@ -43,6 +43,9 @@ void zilol_set_safe_area_insets(float top, float right, float bottom, float left
 /// Set status bar height (called from Swift before JS loads).
 void zilol_set_status_bar_height(float height);
 
+/// Set bundle resource path (called from Swift before JS loads).
+void zilol_set_bundle_resource_path(const char *path);
+
 #ifdef __cplusplus
 }
 #endif

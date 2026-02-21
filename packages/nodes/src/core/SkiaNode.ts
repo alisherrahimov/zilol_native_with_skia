@@ -21,6 +21,7 @@ import type {
   Rect,
   DirtyReason,
 } from "./types";
+import { dirtyTracker } from "./DirtyTracker";
 
 // ---------------------------------------------------------------------------
 // ID counter
@@ -149,11 +150,10 @@ export class SkiaNode {
     return this.props[key];
   }
 
-  // --- Dirty tracking ---
-
   /**
    * Mark this node as dirty and propagate hasDirtyDescendant up the tree.
    * Accumulates a damage rect from the current layout bounds.
+   * Notifies the global DirtyTracker so a render frame is scheduled.
    */
   markDirty(reason: DirtyReason): void {
     if (this.dirty && reason !== "children") return; // already dirty
@@ -173,6 +173,9 @@ export class SkiaNode {
       node.hasDirtyDescendant = true;
       node = node.parent;
     }
+
+    // Notify global tracker (non-recursive — does NOT call markDirty again)
+    dirtyTracker.notifyDirty(this);
   }
 
   /** Clear dirty flags after rendering. */

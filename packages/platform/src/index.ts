@@ -34,6 +34,9 @@ export type { Point } from "./HitTest";
 // Canvas executor
 export { createCanvasExecutor } from "./CanvasExecutor";
 
+// Debug tools (re-export from renderer)
+export { setShowRedraws } from "@zilol-native/renderer";
+
 // Platform adapter
 export {
   setPlatformAdapter,

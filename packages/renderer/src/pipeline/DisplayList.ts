@@ -163,6 +163,8 @@ export class DisplayList {
       y: layout.absoluteY,
       color: (props.color as string) ?? "#000000",
       fontSize: (props.fontSize as number) ?? 14,
+      textAlign: props.textAlign as "left" | "center" | "right" | undefined,
+      layoutWidth: layout.width,
     });
 
     return list;
@@ -175,18 +177,62 @@ export class DisplayList {
     const list = new DisplayList();
     const layout = node.layout;
 
-    // Image drawing requires the actual SkImage object to be loaded.
-    // At this stage we just record the draw intent — the actual image
-    // object will be resolved by the platform layer.
-    if (layout.width > 0 && layout.height > 0) {
+    if (layout.width <= 0 || layout.height <= 0) return list;
+
+    const source = node.props.source as any;
+    const br = resolveBorderRadius(node.props.borderRadius);
+
+    if (source && typeof source.width === "function") {
+      // Clip for borderRadius
+      if (br > 0) {
+        list.push({ type: "save" });
+        list.push({
+          type: "clipRRect",
+          x: layout.absoluteX,
+          y: layout.absoluteY,
+          width: layout.width,
+          height: layout.height,
+          rx: br,
+          ry: br,
+        });
+      }
+
+      // We have a loaded SkImage — emit a real draw command
       list.push({
-        type: "drawRect",
+        type: "drawImage",
+        image: source,
         x: layout.absoluteX,
         y: layout.absoluteY,
         width: layout.width,
         height: layout.height,
-        color: "#CCCCCC", // placeholder until image loads
       });
+
+      if (br > 0) {
+        list.push({ type: "restore" });
+      }
+    } else {
+      // No image loaded yet — draw gray placeholder
+      if (br > 0) {
+        list.push({
+          type: "drawRRect",
+          x: layout.absoluteX,
+          y: layout.absoluteY,
+          width: layout.width,
+          height: layout.height,
+          rx: br,
+          ry: br,
+          color: "#CCCCCC",
+        });
+      } else {
+        list.push({
+          type: "drawRect",
+          x: layout.absoluteX,
+          y: layout.absoluteY,
+          width: layout.width,
+          height: layout.height,
+          color: "#CCCCCC",
+        });
+      }
     }
 
     return list;

@@ -20,9 +20,6 @@ targets:
     type: application
     platform: iOS
     deploymentTarget: "15.0"
-    configFiles:
-      Debug: Pods/Target Support Files/Pods-ZilolNative/Pods-ZilolNative.debug.xcconfig
-      Release: Pods/Target Support Files/Pods-ZilolNative/Pods-ZilolNative.release.xcconfig
 
     sources:
       # Swift files
@@ -50,13 +47,12 @@ targets:
         SWIFT_VERSION: "5.0"
         ENABLE_BITCODE: NO
         CLANG_CXX_LANGUAGE_STANDARD: c++17
-        # Header search paths for shared C++ and Skia/Yoga/Hermes
+        # Header search paths — use skia/ source directly
         HEADER_SEARCH_PATHS:
           - $(inherited)
           - $(SRCROOT)/../../packages/cpp
-          - $(SRCROOT)/../../vendor/skia
-          - $(SRCROOT)/../../vendor/skia/modules
-          - $(SRCROOT)/Pods/Headers/Public
+          - $(SRCROOT)/../../skia
+          - $(SRCROOT)/../../skia/modules
           - $(SRCROOT)/../../vendor/hermes/include
           - $(SRCROOT)/../../vendor/yoga/include
         OTHER_LDFLAGS:
@@ -65,13 +61,25 @@ targets:
           - -framework MetalKit
           - -framework QuartzCore
           - -framework UIKit
+          - -framework CoreText
+          - -framework CoreGraphics
+          - -framework CoreFoundation
           - -lc++
           - -lhermes
           - -lyogacore
+          - -lskia
+          - -lskparagraph
+          - -lskshaper
+          - -lskunicode_core
+          - -lskunicode_icu
+          - -lharfbuzz
+          - -licu
+          - -lskcms
         LIBRARY_SEARCH_PATHS:
           - $(inherited)
           - $(SRCROOT)/../../vendor/hermes/lib/iphonesimulator
           - $(SRCROOT)/../../vendor/yoga/lib/iphonesimulator
+          - $(SRCROOT)/../../skia/out/ios-sim
 
     info:
       path: ZilolNative/Info.plist

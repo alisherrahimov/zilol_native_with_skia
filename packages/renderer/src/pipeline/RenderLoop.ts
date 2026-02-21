@@ -56,10 +56,14 @@ export class RenderLoop {
     this._executor = executor;
     this._running = true;
 
-    // Register with DirtyTracker
+    // Register with DirtyTracker — schedule a vsync frame callback
+    // so rendering happens inside beginFrame()/endFrame() with an active
+    // Metal drawable, rather than calling renderFrame() directly.
     dirtyTracker.onFrameNeeded(() => {
       if (this._running) {
-        this.renderFrame();
+        __skiaRequestFrame(() => {
+          this.renderFrame();
+        });
       }
     });
   }

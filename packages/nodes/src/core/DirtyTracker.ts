@@ -48,6 +48,16 @@ class DirtyTrackerImpl {
   }
 
   /**
+   * Notify that a node is already dirty — add it and request a frame,
+   * but do NOT call node.markDirty() again (avoids recursion when
+   * called from within SkiaNode.markDirty).
+   */
+  notifyDirty(node: SkiaNode): void {
+    this._dirtyNodes.add(node);
+    this._requestFrame();
+  }
+
+  /**
    * Collect the merged damage rect from all dirty nodes.
    * Returns null if no nodes are dirty.
    */

@@ -14,6 +14,9 @@
 
 #include <string>
 #include <memory>
+#include <functional>
+
+namespace facebook { namespace jsi { class Runtime; } }
 
 namespace zilol {
 
@@ -34,5 +37,8 @@ void onVsync(double timestampMs);
 
 /// Called on touch event from the platform view.
 void onTouch(int phase, float x, float y, int pointerId);
+
+/// Queue a microtask to run on the JS thread at next vsync.
+void queueMicrotask(std::function<void(facebook::jsi::Runtime&)> task);
 
 } // namespace zilol

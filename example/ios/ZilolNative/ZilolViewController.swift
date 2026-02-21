@@ -39,6 +39,13 @@ class ZilolViewController: UIViewController {
             zilol_set_status_bar_height(
                 Float(scene.statusBarManager?.statusBarFrame.height ?? 0))
         }
+
+        // Set bundle resource path (for image loading)
+        if let resourcePath = Bundle.main.resourcePath {
+            resourcePath.withCString { cPath in
+                zilol_set_bundle_resource_path(cPath)
+            }
+        }
     }
 
     override func viewDidLayoutSubviews() {

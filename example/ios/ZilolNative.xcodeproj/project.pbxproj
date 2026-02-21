@@ -15,16 +15,15 @@
 		80FF193D96AE9D1C4F50E8A4 /* ZilolRuntimeBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98E12A949421CBE0F9C37B2D /* ZilolRuntimeBridge.swift */; };
 		81388E13C31EA24E04CD5E92 /* ZilolRuntime.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7A2A13A6BEE25F07FFB07458 /* ZilolRuntime.cpp */; settings = {COMPILER_FLAGS = "-std=c++17"; }; };
 		ACB6B576871BD5C33F0C8F17 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84FBA1A09CF18C01CDB1F6C5 /* AppDelegate.swift */; };
-		C363D7A580C7B83E3BB7CC9C /* Pods_ZilolNative.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E439249BB5324B7C926EB939 /* Pods_ZilolNative.framework */; };
 		CBDA020E53C2C4A54B49FAB1 /* ZilolMetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDFF2517638A072F0AA7E30C /* ZilolMetalView.swift */; };
 		ECCDFF36C99F4CD35B15BAB4 /* ZilolViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1F7A7C60C703B1B7581B280 /* ZilolViewController.swift */; };
 		F1FB4877AF85E9084CAFA7EF /* index.bundle.js in Resources */ = {isa = PBXBuildFile; fileRef = E032D341326E53A2E423E0E1 /* index.bundle.js */; };
+		A3764BCD465D43D19A3C9203 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 86E33679C7DE47DEA654DA95 /* logo.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		020209940745A58B8DADA2FE /* ZilolNative.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ZilolNative.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		199593A8DAB5AE038F2E532D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		23E537E52D5270E6A8DDB095 /* Pods-ZilolNative.release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Pods-ZilolNative.release.xcconfig"; sourceTree = "<group>"; };
 		26A39AF9BB59F96D8DCDF23C /* SkiaHostFunctions.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkiaHostFunctions.h; sourceTree = "<group>"; };
 		2B5AB6A94D47E2E9B2338D67 /* SkiaSurfaceHostObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkiaSurfaceHostObject.h; sourceTree = "<group>"; };
 		302B024B435B62D37701F2F8 /* SkiaTextRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkiaTextRenderer.h; sourceTree = "<group>"; };
@@ -35,37 +34,23 @@
 		596BC53F2CBC190C5EE32988 /* YogaHostFunctions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = YogaHostFunctions.cpp; sourceTree = "<group>"; };
 		6AB50F5DB73A925B0B75E079 /* ZilolRuntime.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ZilolRuntime.h; sourceTree = "<group>"; };
 		7A2A13A6BEE25F07FFB07458 /* ZilolRuntime.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ZilolRuntime.cpp; sourceTree = "<group>"; };
-		7BEDD168617AC67342D8107C /* Pods-ZilolNative.debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "Pods-ZilolNative.debug.xcconfig"; sourceTree = "<group>"; };
 		84FBA1A09CF18C01CDB1F6C5 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8573454F5EE878FFC15C8C5E /* ColorParser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ColorParser.h; sourceTree = "<group>"; };
 		98E12A949421CBE0F9C37B2D /* ZilolRuntimeBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZilolRuntimeBridge.swift; sourceTree = "<group>"; };
-		9A5E790F6977D3DE2795669D /* Pods-ZilolNative.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZilolNative.debug.xcconfig"; path = "Target Support Files/Pods-ZilolNative/Pods-ZilolNative.debug.xcconfig"; sourceTree = "<group>"; };
 		BE943C05AA36CB2B44F8EC46 /* SkiaRendererMetal.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = SkiaRendererMetal.mm; sourceTree = "<group>"; };
 		CA71A2024C000F4E3954B03A /* SkiaImageHostObject.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkiaImageHostObject.h; sourceTree = "<group>"; };
 		CDFF2517638A072F0AA7E30C /* ZilolMetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZilolMetalView.swift; sourceTree = "<group>"; };
 		CEB22300F3EB4B64E2B7F17C /* ZilolBridge_iOS.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ZilolBridge_iOS.mm; sourceTree = "<group>"; };
 		D34E1E5CB7BD997520DA475D /* SkiaRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkiaRenderer.h; sourceTree = "<group>"; };
 		E032D341326E53A2E423E0E1 /* index.bundle.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = index.bundle.js; sourceTree = "<group>"; };
-		E439249BB5324B7C926EB939 /* Pods_ZilolNative.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ZilolNative.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		E54375C2F863EAA97F3B38BD /* Pods-ZilolNative.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZilolNative.release.xcconfig"; path = "Target Support Files/Pods-ZilolNative/Pods-ZilolNative.release.xcconfig"; sourceTree = "<group>"; };
 		E7A8CBCE0836DC0D1712270B /* SkiaImageManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkiaImageManager.h; sourceTree = "<group>"; };
 		ED636792AB445BBB9BA2B11F /* ZilolNative-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ZilolNative-Bridging-Header.h"; sourceTree = "<group>"; };
 		EE05C397CE0ED76492206B23 /* SkiaRendererMetal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkiaRendererMetal.h; sourceTree = "<group>"; };
 		F1F7A7C60C703B1B7581B280 /* ZilolViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZilolViewController.swift; sourceTree = "<group>"; };
 		F2E3AD8D62E75081B000D8F9 /* PlatformHostFunctions.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PlatformHostFunctions.cpp; sourceTree = "<group>"; };
 		FF53CF58A58F3F95BAC55DDC /* SkiaGradient.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SkiaGradient.h; sourceTree = "<group>"; };
+		86E33679C7DE47DEA654DA95 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFrameworksBuildPhase section */
-		9E1F0FE74CC321868BE93435 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C363D7A580C7B83E3BB7CC9C /* Pods_ZilolNative.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0FE4AD061C52B3536856A45F /* cpp */ = {
@@ -81,11 +66,9 @@
 		641802B59D35879C2721106A = {
 			isa = PBXGroup;
 			children = (
-				8838991840DCE1907BB6CBF2 /* Pods */,
 				9A2C0C40D837A15F3784F860 /* zilol-native */,
 				D07BDFC5118420F790F19941 /* ZilolNative */,
 				70C8FBFCEFE0D465D1A353A2 /* Products */,
-				FECFD6D261A02C016D7FD047 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -95,16 +78,6 @@
 				020209940745A58B8DADA2FE /* ZilolNative.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		8838991840DCE1907BB6CBF2 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				E2B6D9AE2980F0BCFCD679DC /* Target Support Files */,
-				9A5E790F6977D3DE2795669D /* Pods-ZilolNative.debug.xcconfig */,
-				E54375C2F863EAA97F3B38BD /* Pods-ZilolNative.release.xcconfig */,
-			);
-			path = Pods;
 			sourceTree = "<group>";
 		};
 		948517BCFE18333AB79F4E5F /* packages */ = {
@@ -144,6 +117,7 @@
 				98E12A949421CBE0F9C37B2D /* ZilolRuntimeBridge.swift */,
 				F1F7A7C60C703B1B7581B280 /* ZilolViewController.swift */,
 				0FE4AD061C52B3536856A45F /* cpp */,
+				86E33679C7DE47DEA654DA95 /* logo.png */,
 			);
 			path = ZilolNative;
 			sourceTree = "<group>";
@@ -155,14 +129,6 @@
 				497FD3DC74138ED52934E676 /* YogaHostFunctions.h */,
 			);
 			path = yoga;
-			sourceTree = "<group>";
-		};
-		E2B6D9AE2980F0BCFCD679DC /* Target Support Files */ = {
-			isa = PBXGroup;
-			children = (
-				F1C5C9CB12EF446EFB9E85E1 /* Pods-ZilolNative */,
-			);
-			path = "Target Support Files";
 			sourceTree = "<group>";
 		};
 		EBA5736738550CB759711668 /* SharedCpp */ = {
@@ -186,15 +152,6 @@
 			path = runtime;
 			sourceTree = "<group>";
 		};
-		F1C5C9CB12EF446EFB9E85E1 /* Pods-ZilolNative */ = {
-			isa = PBXGroup;
-			children = (
-				7BEDD168617AC67342D8107C /* Pods-ZilolNative.debug.xcconfig */,
-				23E537E52D5270E6A8DDB095 /* Pods-ZilolNative.release.xcconfig */,
-			);
-			path = "Pods-ZilolNative";
-			sourceTree = "<group>";
-		};
 		FC955A4D5E57A138C1CEA8FA /* skia */ = {
 			isa = PBXGroup;
 			children = (
@@ -212,14 +169,6 @@
 			path = skia;
 			sourceTree = "<group>";
 		};
-		FECFD6D261A02C016D7FD047 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				E439249BB5324B7C926EB939 /* Pods_ZilolNative.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -227,16 +176,16 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D5D62EDE374DEB45DD24BFB3 /* Build configuration list for PBXNativeTarget "ZilolNative" */;
 			buildPhases = (
-				47DB58468C8AB8014734DC96 /* [CP] Check Pods Manifest.lock */,
 				171E6613BD010A0B0499B7D9 /* Sources */,
 				B1EEE9C596D139BD5DDFBDB6 /* Resources */,
-				9E1F0FE74CC321868BE93435 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = ZilolNative;
+			packageProductDependencies = (
+			);
 			productName = ZilolNative;
 			productReference = 020209940745A58B8DADA2FE /* ZilolNative.app */;
 			productType = "com.apple.product-type.application";
@@ -266,7 +215,6 @@
 			mainGroup = 641802B59D35879C2721106A;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 70C8FBFCEFE0D465D1A353A2 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -280,36 +228,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A3764BCD465D43D19A3C9203 /* logo.png in Resources */,
 				F1FB4877AF85E9084CAFA7EF /* index.bundle.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		47DB58468C8AB8014734DC96 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-ZilolNative-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		171E6613BD010A0B0499B7D9 /* Sources */ = {
@@ -396,7 +320,6 @@
 		};
 		4436C92DC35EED95FFF8FCA0 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = E54375C2F863EAA97F3B38BD /* Pods-ZilolNative.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
@@ -406,9 +329,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../packages/cpp",
-					"$(SRCROOT)/../../vendor/skia",
-					"$(SRCROOT)/../../vendor/skia/modules",
-					"$(SRCROOT)/Pods/Headers/Public",
+					"$(SRCROOT)/../../skia",
+					"$(SRCROOT)/../../skia/modules",
 					"$(SRCROOT)/../../vendor/hermes/include",
 					"$(SRCROOT)/../../vendor/yoga/include",
 				);
@@ -422,6 +344,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/../../vendor/hermes/lib/iphonesimulator",
 					"$(SRCROOT)/../../vendor/yoga/lib/iphonesimulator",
+					"$(SRCROOT)/../../skia/out/ios-sim",
 				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -429,9 +352,20 @@
 					"-framework MetalKit",
 					"-framework QuartzCore",
 					"-framework UIKit",
+					"-framework CoreText",
+					"-framework CoreGraphics",
+					"-framework CoreFoundation",
 					"-lc++",
 					"-lhermes",
 					"-lyogacore",
+					"-lskia",
+					"-lskparagraph",
+					"-lskshaper",
+					"-lskunicode_core",
+					"-lskunicode_icu",
+					"-lharfbuzz",
+					"-licu",
+					"-lskcms",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zilol.native;
 				SDKROOT = iphoneos;
@@ -507,7 +441,6 @@
 		};
 		F66137312796219D30C173F2 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 9A5E790F6977D3DE2795669D /* Pods-ZilolNative.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
@@ -517,9 +450,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(SRCROOT)/../../packages/cpp",
-					"$(SRCROOT)/../../vendor/skia",
-					"$(SRCROOT)/../../vendor/skia/modules",
-					"$(SRCROOT)/Pods/Headers/Public",
+					"$(SRCROOT)/../../skia",
+					"$(SRCROOT)/../../skia/modules",
 					"$(SRCROOT)/../../vendor/hermes/include",
 					"$(SRCROOT)/../../vendor/yoga/include",
 				);
@@ -533,6 +465,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/../../vendor/hermes/lib/iphonesimulator",
 					"$(SRCROOT)/../../vendor/yoga/lib/iphonesimulator",
+					"$(SRCROOT)/../../skia/out/ios-sim",
 				);
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -540,9 +473,20 @@
 					"-framework MetalKit",
 					"-framework QuartzCore",
 					"-framework UIKit",
+					"-framework CoreText",
+					"-framework CoreGraphics",
+					"-framework CoreFoundation",
 					"-lc++",
 					"-lhermes",
 					"-lyogacore",
+					"-lskia",
+					"-lskparagraph",
+					"-lskshaper",
+					"-lskunicode_core",
+					"-lskunicode_icu",
+					"-lharfbuzz",
+					"-licu",
+					"-lskcms",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.zilol.native;
 				SDKROOT = iphoneos;

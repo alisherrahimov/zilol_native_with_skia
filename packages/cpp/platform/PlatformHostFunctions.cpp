@@ -28,6 +28,7 @@ static float sScreenHeight = 0;
 static float sPixelRatio = 1;
 static float sSafeTop = 0, sSafeRight = 0, sSafeBottom = 0, sSafeLeft = 0;
 static float sStatusBarHeight = 0;
+static std::string sBundleResourcePath;
 
 void registerHostFunctions(jsi::Runtime &rt) {
 
@@ -80,6 +81,16 @@ void registerHostFunctions(jsi::Runtime &rt) {
                const jsi::Value *, size_t) -> jsi::Value {
                 return jsi::Value(static_cast<double>(sStatusBarHeight));
             }));
+
+    // __getBundleResourcePath() → string (main bundle resource directory)
+    rt.global().setProperty(rt, "__getBundleResourcePath",
+        jsi::Function::createFromHostFunction(rt,
+            jsi::PropNameID::forAscii(rt, "__getBundleResourcePath"), 0,
+            [](jsi::Runtime &rt, const jsi::Value &,
+               const jsi::Value *, size_t) -> jsi::Value {
+                if (sBundleResourcePath.empty()) return jsi::Value::undefined();
+                return jsi::String::createFromUtf8(rt, sBundleResourcePath);
+            }));
 }
 
 } // namespace platform
@@ -106,6 +117,10 @@ void zilol_set_safe_area_insets(float top, float right, float bottom, float left
 
 void zilol_set_status_bar_height(float height) {
     zilol::platform::sStatusBarHeight = height;
+}
+
+void zilol_set_bundle_resource_path(const char *path) {
+    zilol::platform::sBundleResourcePath = path ? path : "";
 }
 
 } // extern "C"
