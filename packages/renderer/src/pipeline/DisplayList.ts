@@ -251,6 +251,8 @@ export class DisplayList {
         return DisplayList.generateForImage(node);
       case "scroll":
         return DisplayList.generateForView(node); // scroll draws like a view + clip
+      case "activityIndicator":
+        return new DisplayList(); // draw handled by drawActivityIndicator
       case "canvas":
         return new DisplayList(); // custom draw handled separately
       case "marker":

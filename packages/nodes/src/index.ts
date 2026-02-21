@@ -45,6 +45,7 @@ export {
   createCanvasNode,
   createMarkerNode,
   createPlatformNode,
+  createActivityIndicatorNode,
 } from "./elements";
 export type {
   ViewNodeProps,

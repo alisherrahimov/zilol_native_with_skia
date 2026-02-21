@@ -146,6 +146,26 @@ export function createCanvasExecutor(
         );
         break;
 
+      case "rotate":
+        // Rotate around a pivot point:
+        // translate to pivot → rotate → translate back
+        canvas.translate(command.cx, command.cy);
+        canvas.rotate(command.degrees);
+        canvas.translate(-command.cx, -command.cy);
+        break;
+
+      case "drawArc":
+        canvas.drawArc(
+          command.cx,
+          command.cy,
+          command.radius,
+          command.startAngle,
+          command.sweepAngle,
+          command.color,
+          command.strokeWidth,
+        );
+        break;
+
       default: {
         // Exhaustive check — if a new command type is added,
         // TypeScript will flag this as an error.

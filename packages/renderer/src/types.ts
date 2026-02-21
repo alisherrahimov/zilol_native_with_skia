@@ -127,11 +127,13 @@ export type DrawCommand =
   | DrawTextCommand
   | DrawImageCommand
   | DrawShadowCommand
+  | DrawArcCommand
   | ClipRRectCommand
   | SaveCommand
   | SaveLayerAlphaCommand
   | RestoreCommand
   | TranslateCommand
+  | RotateCommand
   | ClearCommand;
 
 export interface DrawRectCommand {
@@ -236,4 +238,32 @@ export interface SaveLayerAlphaCommand {
   width: number;
   height: number;
   alpha: number;
+}
+
+export interface DrawArcCommand {
+  type: "drawArc";
+  /** Center X of the arc's bounding oval. */
+  cx: number;
+  /** Center Y of the arc's bounding oval. */
+  cy: number;
+  /** Radius of the arc. */
+  radius: number;
+  /** Starting angle in degrees (0 = 3 o'clock). */
+  startAngle: number;
+  /** Sweep angle in degrees (positive = clockwise). */
+  sweepAngle: number;
+  /** Stroke color. */
+  color: string;
+  /** Stroke width. */
+  strokeWidth: number;
+}
+
+export interface RotateCommand {
+  type: "rotate";
+  /** Rotation angle in degrees. */
+  degrees: number;
+  /** Pivot X (center of rotation). */
+  cx: number;
+  /** Pivot Y (center of rotation). */
+  cy: number;
 }

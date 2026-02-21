@@ -26,6 +26,7 @@ const aliases = {
   "@zilol-native/platform": path.join(packagesDir, "platform/src/index.ts"),
   "@zilol-native/gestures": path.join(packagesDir, "gestures/src/index.ts"),
   "@zilol-native/components": path.join(packagesDir, "components/src/index.ts"),
+  "@zilol-native/animation": path.join(packagesDir, "animation/src/index.ts"),
 };
 
 // esbuild plugin to resolve workspace packages from source

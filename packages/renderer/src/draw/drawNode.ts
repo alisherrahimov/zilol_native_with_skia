@@ -15,6 +15,7 @@ import { drawView } from "./drawView";
 import { drawText } from "./drawText";
 import { drawImage } from "./drawImage";
 import { drawScroll } from "./drawScroll";
+import { drawActivityIndicator } from "./drawActivityIndicator";
 
 // ---------------------------------------------------------------------------
 // Debug overlay configuration
@@ -106,6 +107,9 @@ export function drawNode(
       break;
     case "scroll":
       drawScroll(node, damageRect, executor);
+      break;
+    case "activityIndicator":
+      drawActivityIndicator(node, damageRect, executor);
       break;
     case "canvas":
       // Custom drawing — the node's onDraw callback handles this.

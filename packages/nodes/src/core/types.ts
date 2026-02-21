@@ -17,7 +17,8 @@ export type SkiaNodeType =
   | "scroll" // Scrollable container with physics
   | "canvas" // Raw Skia canvas for custom drawing
   | "marker" // Invisible — used by Show/For for structural changes
-  | "platform"; // Native view island (TextInput, Maps, etc.)
+  | "platform" // Native view island (TextInput, Maps, etc.)
+  | "activityIndicator"; // Spinning loading indicator
 
 // ---------------------------------------------------------------------------
 // Geometry

@@ -21,3 +21,5 @@ export { createMarkerNode } from "./MarkerNode";
 
 export { createPlatformNode } from "./PlatformNode";
 export type { PlatformNodeProps } from "./PlatformNode";
+
+export { createActivityIndicatorNode } from "./ActivityIndicatorNode";

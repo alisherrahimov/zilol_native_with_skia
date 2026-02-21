@@ -44,6 +44,10 @@ export { Text, TextBuilder } from "./Text";
 export { Pressable, PressableBuilder } from "./Pressable";
 export { Image, ImageBuilder } from "./Image";
 export { ScrollView, ScrollViewBuilder } from "./ScrollView";
+export {
+  ActivityIndicator,
+  ActivityIndicatorBuilder,
+} from "./ActivityIndicator";
 
 // Base class (for extending custom components)
 export { ComponentBase } from "./ComponentBase";

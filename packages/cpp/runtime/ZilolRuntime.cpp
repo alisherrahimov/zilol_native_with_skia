@@ -281,6 +281,29 @@ void initialize(std::unique_ptr<skia::SkiaRenderer> renderer) {
                 return jsi::Value::undefined();
             }));
 
+    // setImmediate(callback) → timerId
+    // Required by Hermes Promise internals for microtask scheduling.
+    // Implemented as setTimeout(callback, 0).
+    rt.global().setProperty(rt, "setImmediate",
+        jsi::Function::createFromHostFunction(rt,
+            jsi::PropNameID::forAscii(rt, "setImmediate"), 1,
+            [](jsi::Runtime &rt, const jsi::Value &,
+               const jsi::Value *args, size_t count) -> jsi::Value {
+                if (count < 1 || !args[0].isObject() ||
+                    !args[0].asObject(rt).isFunction(rt)) {
+                    return jsi::Value::undefined();
+                }
+                auto fn = std::make_shared<jsi::Function>(
+                    args[0].asObject(rt).asFunction(rt));
+                int id;
+                {
+                    std::lock_guard<std::mutex> lock(sTimerMutex);
+                    id = sNextTimerId++;
+                    sTimers.push_back({id, fn, currentTimeMs(), 0});
+                }
+                return jsi::Value(id);
+            }));
+
     fprintf(stdout, "[ZilolRuntime] Initialized — Hermes + JSI ready\n");
 }
 

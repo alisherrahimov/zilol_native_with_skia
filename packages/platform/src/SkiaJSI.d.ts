@@ -226,6 +226,18 @@ interface SkiaCanvasProxy {
   ): void;
 
   clear(color: string): void;
+
+  // ── Draw: arcs ───────────────────────────────────────────
+  /** Draw a stroked arc (for spinners, progress rings, etc.). */
+  drawArc(
+    cx: number,
+    cy: number,
+    radius: number,
+    startAngle: number,
+    sweepAngle: number,
+    color: string,
+    strokeWidth: number,
+  ): void;
 }
 
 // ---------------------------------------------------------------------------
