@@ -26,6 +26,31 @@ export interface MeasureResult {
   height: number;
 }
 
+// ---------------------------------------------------------------------------
+// Font weight resolution
+// ---------------------------------------------------------------------------
+
+/** CSS font-weight keyword → numeric mapping (mirrors C++ SkiaNodeTree.h). */
+const FONT_WEIGHT_MAP: Record<string, number> = {
+  normal: 400,
+  bold: 700,
+};
+
+/**
+ * Resolve a FontWeight value (string or number) to a numeric weight.
+ * Returns `undefined` for unrecognised / missing values.
+ */
+export function parseFontWeight(
+  value: string | number | undefined,
+): number | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value === "number") return value;
+  const mapped = FONT_WEIGHT_MAP[value];
+  if (mapped !== undefined) return mapped;
+  const parsed = parseInt(value, 10);
+  return isNaN(parsed) ? undefined : parsed;
+}
+
 /**
  * Text measure function signature.
  *
@@ -35,7 +60,7 @@ export interface MeasureResult {
  * @param text - The text content to measure
  * @param fontSize - Font size in logical pixels
  * @param fontFamily - Font family name
- * @param fontWeight - Font weight string
+ * @param fontWeight - Font weight as a numeric value (100–900)
  * @param maxWidth - Available width constraint
  * @param widthMode - How the width constraint is applied
  * @param maxHeight - Available height constraint
@@ -47,7 +72,7 @@ export type TextMeasureFunc = (
   text: string,
   fontSize: number,
   fontFamily: string | undefined,
-  fontWeight: string | undefined,
+  fontWeight: number | undefined,
   maxWidth: number,
   widthMode: MeasureMode,
   maxHeight: number,

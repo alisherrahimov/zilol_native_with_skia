@@ -140,6 +140,28 @@ export class ViewBuilder extends ComponentBase {
     this.node.setProp("onLongPress", handler);
     return this;
   }
+
+  // -----------------------------------------------------------------------
+  // Gradient
+  // -----------------------------------------------------------------------
+
+  /** Set a linear gradient background.
+   * @param colors Array of color strings
+   * @param direction Direction: 'toBottom', 'toRight', 'toTop', 'toLeft', 'toTopRight', 'toBottomRight'
+   */
+  linearGradient(
+    colors: string[],
+    direction:
+      | "toBottom"
+      | "toRight"
+      | "toTop"
+      | "toLeft"
+      | "toTopRight"
+      | "toBottomRight" = "toBottom",
+  ): this {
+    setProp(this.node, "linearGradient" as any, { colors, direction });
+    return this;
+  }
 }
 
 // ---------------------------------------------------------------------------

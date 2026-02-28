@@ -1,5 +1,7 @@
 /**
  * Pipeline barrel exports.
+ *
+ * DisplayList and RenderLoop removed — rendering handled by C++.
  */
 
 export {
@@ -8,8 +10,5 @@ export {
   intersects,
   unionRects,
 } from "./DamageRect";
-export { DisplayList } from "./DisplayList";
-export type { CommandExecutor } from "./DisplayList";
-export { RenderLoop } from "./RenderLoop";
 export { Compositor } from "./Compositor";
 export type { PlatformViewFrame } from "./Compositor";

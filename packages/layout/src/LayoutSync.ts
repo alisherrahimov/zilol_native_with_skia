@@ -62,6 +62,22 @@ function _syncNode(
     old.absoluteY !== absoluteY
   ) {
     node.layout = { x, y, width, height, absoluteX, absoluteY };
+
+    // Sync to C++ node tree for direct rendering
+    if (
+      (node as any).cppNodeId &&
+      typeof (globalThis as any).__nodeSetLayout === "function"
+    ) {
+      (globalThis as any).__nodeSetLayout(
+        (node as any).cppNodeId,
+        x,
+        y,
+        width,
+        height,
+        absoluteX,
+        absoluteY,
+      );
+    }
   }
 
   // Recurse into children

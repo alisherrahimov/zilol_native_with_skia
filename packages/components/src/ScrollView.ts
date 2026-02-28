@@ -1,58 +1,71 @@
 /**
  * ScrollView — Scrollable container component with physics.
  *
- * Creates a scroll node backed by a ScrollController that provides:
- *  - Touch-driven scrolling with velocity tracking
- *  - iOS-style rubber-band overscroll
- *  - Deceleration (friction-based fling)
- *  - Bounce-back spring to boundaries
- *  - Snap-to-interval and paging
- *  - Scroll events (onScroll, onScrollEnd, drag events)
+ * Creates a scroll node backed by the C++ ScrollEngine that provides:
+ *  - Touch-driven scrolling with velocity tracking (in C++)
+ *  - iOS-style rubber-band overscroll (in C++)
+ *  - Deceleration (friction-based fling) (in C++)
+ *  - Bounce-back spring to boundaries (in C++)
+ *  - Snap-to-interval and paging (in C++)
+ *  - Scroll events (onScroll, onScrollEnd) via JS callbacks
  *
- * Inherits all layout modifiers from ComponentBase (padding, margin,
- * flex, size, etc.) plus visual modifiers for background and border.
+ * All physics runs in C++ — JS only receives onScroll/onScrollEnd
+ * callbacks when the offset changes.
  *
  * @example
  * ```ts
- * import { ScrollView, View, Text } from '@zilol-native/components';
- * import { signal } from '@zilol-native/runtime';
- *
- * // Vertical list
- * const list = ScrollView(
- *   ...items.map((item) =>
- *     View(Text(item.title).color('#FFF'))
- *       .padding(16)
- *       .backgroundColor('#1E293B')
- *       .borderRadius(8),
- *   ),
- * )
+ * ScrollView(child1, child2, child3)
  *   .flex(1)
- *   .gap(8)
- *   .padding(16)
- *   .backgroundColor('#0A1628');
- *
- * // Horizontal carousel with snapping
- * const offset = signal({ x: 0, y: 0 });
+ *   .backgroundColor('#0F172A');
  *
  * ScrollView(...cards)
  *   .horizontal()
- *   .showsScrollIndicator(false)
  *   .snapToInterval(320)
- *   .decelerationRate('fast')
- *   .onScroll((pos) => { offset.value = pos; });
+ *   .decelerationRate('fast');
  * ```
  */
 
 import { createScrollNode } from "@zilol-native/nodes";
 import { effect } from "@zilol-native/runtime";
 import type { SkiaNode, BorderRadius, ShadowProps } from "@zilol-native/nodes";
-import { ScrollController } from "@zilol-native/gestures";
 import { ComponentBase } from "./ComponentBase";
 import { resolveNode } from "./types";
 import type { ComponentChild } from "./types";
 
 // ---------------------------------------------------------------------------
-// Reactive setter helper (duplicated to avoid circular deps)
+// C++ scroll engine bridge (JSI globals)
+// ---------------------------------------------------------------------------
+
+declare function __scrollCreate(nodeId: number): number;
+declare function __scrollTouch(
+  engineId: number,
+  phase: number,
+  x: number,
+  y: number,
+  timestamp: number,
+  pointerId: number,
+): boolean | undefined;
+declare function __scrollTo(
+  engineId: number,
+  x: number,
+  y: number,
+  animated: boolean,
+): void;
+declare function __scrollSetConfig(
+  engineId: number,
+  key: string,
+  value: any,
+): void;
+declare function __scrollSetCallbacks(
+  engineId: number,
+  onScroll: ((x: number, y: number) => void) | null,
+  onScrollEnd: ((x: number, y: number) => void) | null,
+): void;
+
+const hasCppScroll = typeof (globalThis as any).__scrollCreate === "function";
+
+// ---------------------------------------------------------------------------
+// Reactive setter helper
 // ---------------------------------------------------------------------------
 
 type Val<T> = T | (() => T);
@@ -74,7 +87,7 @@ function setProp(node: SkiaNode, key: string, value: unknown): void {
 
 export class ScrollViewBuilder extends ComponentBase {
   readonly node: SkiaNode;
-  private readonly _controller: ScrollController;
+  private _scrollEngineId: number = 0;
 
   constructor(children: ComponentChild[]) {
     super();
@@ -87,93 +100,112 @@ export class ScrollViewBuilder extends ComponentBase {
       }
     }
 
-    // Attach scroll controller for touch-driven physics
-    this._controller = new ScrollController(this.node);
+    // Create C++ scroll engine bound to this node
+    if (hasCppScroll && (this.node as any).cppNodeId) {
+      this._scrollEngineId = __scrollCreate((this.node as any).cppNodeId);
 
-    // Wire touch events → ScrollController
-    // These fire when the scroll node is hit directly, or via event bubbling
-    // from child nodes (e.g. user drags on a card inside the scroll)
-    const ctrl = this._controller;
-
-    this.node.props.onTouchStart = (e: any) => {
-      ctrl.onTouchBegan(e.pointerId, e.x, e.y, e.timestamp);
-    };
-
-    this.node.props.onTouchMove = (e: any) => {
-      ctrl.onTouchMoved(e.pointerId, e.x, e.y, e.timestamp);
-    };
-
-    this.node.props.onTouchEnd = (e: any) => {
-      ctrl.onTouchEnded(e.pointerId, e.timestamp);
-    };
+      // Wire touch events → C++ scroll engine
+      const eid = this._scrollEngineId;
+      this.node.props.onTouchStart = (e: any) => {
+        __scrollTouch(eid, 0, e.x, e.y, e.timestamp, e.pointerId);
+      };
+      this.node.props.onTouchMove = (e: any) => {
+        __scrollTouch(eid, 1, e.x, e.y, e.timestamp, e.pointerId);
+      };
+      this.node.props.onTouchEnd = (e: any) => {
+        __scrollTouch(eid, 2, e.x, e.y, e.timestamp, e.pointerId);
+      };
+    }
   }
 
   // -----------------------------------------------------------------------
   // Scroll behaviour
   // -----------------------------------------------------------------------
 
-  /**
-   * Enable horizontal scrolling (default is vertical).
-   * Sets the scroll axis — children flow accordingly.
-   */
   horizontal(value: Val<boolean> = true): this {
     setProp(this.node, "horizontal", value);
+    if (hasCppScroll && this._scrollEngineId) {
+      __scrollSetConfig(
+        this._scrollEngineId,
+        "horizontal",
+        typeof value === "function" ? value() : value,
+      );
+    }
     return this;
   }
 
-  /** Enable/disable iOS-style rubber banding on overscroll (default: true). */
   bounces(value: Val<boolean> = true): this {
     setProp(this.node, "bounces", value);
+    if (hasCppScroll && this._scrollEngineId) {
+      __scrollSetConfig(
+        this._scrollEngineId,
+        "bounces",
+        typeof value === "function" ? value() : value,
+      );
+    }
     return this;
   }
 
-  /** Show/hide scroll indicators (default: true). */
   showsScrollIndicator(value: Val<boolean> = true): this {
     setProp(this.node, "showsScrollIndicator", value);
     return this;
   }
 
-  /** Set the scroll offset programmatically (x axis). */
   scrollX(value: Val<number>): this {
     setProp(this.node, "scrollX", value);
     return this;
   }
 
-  /** Set the scroll offset programmatically (y axis). */
   scrollY(value: Val<number>): this {
     setProp(this.node, "scrollY", value);
     return this;
   }
 
-  /** Snap to intervals — children are snapped at multiples of this value. */
   snapToInterval(value: Val<number>): this {
     setProp(this.node, "snapToInterval", value);
+    if (hasCppScroll && this._scrollEngineId) {
+      __scrollSetConfig(
+        this._scrollEngineId,
+        "snapToInterval",
+        typeof value === "function" ? value() : value,
+      );
+    }
     return this;
   }
 
-  /**
-   * Deceleration rate for fling:
-   * - `'normal'` (0.998) — default iOS behavior
-   * - `'fast'` (0.99) — stops quickly, good for pickers
-   * - custom number (0…1) — lower = faster deceleration
-   */
   decelerationRate(value: Val<"normal" | "fast" | number>): this {
     setProp(this.node, "decelerationRate", value);
+    if (hasCppScroll && this._scrollEngineId) {
+      __scrollSetConfig(
+        this._scrollEngineId,
+        "decelerationRate",
+        typeof value === "function" ? value() : value,
+      );
+    }
     return this;
   }
 
-  /** Enable/disable scrolling (default: true). Content remains clipped. */
   scrollEnabled(value: Val<boolean> = true): this {
     setProp(this.node, "scrollEnabled", value);
+    if (hasCppScroll && this._scrollEngineId) {
+      __scrollSetConfig(
+        this._scrollEngineId,
+        "scrollEnabled",
+        typeof value === "function" ? value() : value,
+      );
+    }
     return this;
   }
 
-  /**
-   * Enable paging mode — scroll stops at multiples of the viewport size.
-   * Useful for onboarding flows, photo galleries, etc.
-   */
   pagingEnabled(value: Val<boolean> = true): this {
     setProp(this.node, "pagingEnabled", value);
+    if (hasCppScroll && this._scrollEngineId) {
+      __scrollSetConfig(
+        this._scrollEngineId,
+        "pagingEnabled",
+        typeof value === "function" ? value() : value,
+      );
+    }
     return this;
   }
 
@@ -181,25 +213,33 @@ export class ScrollViewBuilder extends ComponentBase {
   // Scroll event callbacks
   // -----------------------------------------------------------------------
 
-  /** Called on every scroll offset change with { x, y }. */
   onScroll(handler: (offset: { x: number; y: number }) => void): this {
     this.node.setProp("onScroll", handler);
+    if (hasCppScroll && this._scrollEngineId) {
+      __scrollSetCallbacks(
+        this._scrollEngineId,
+        (x, y) => handler({ x, y }),
+        null,
+      );
+    }
     return this;
   }
 
-  /** Called when scroll momentum settles (deceleration/bounce/snap complete). */
   onScrollEnd(handler: (offset: { x: number; y: number }) => void): this {
     this.node.setProp("onScrollEnd", handler);
+    if (hasCppScroll && this._scrollEngineId) {
+      __scrollSetCallbacks(this._scrollEngineId, null, (x, y) =>
+        handler({ x, y }),
+      );
+    }
     return this;
   }
 
-  /** Called when the user begins dragging. */
   onScrollBeginDrag(handler: () => void): this {
     this.node.setProp("onScrollBeginDrag", handler);
     return this;
   }
 
-  /** Called when the user stops dragging (may still be decelerating). */
   onScrollEndDrag(handler: () => void): this {
     this.node.setProp("onScrollEndDrag", handler);
     return this;
@@ -209,21 +249,11 @@ export class ScrollViewBuilder extends ComponentBase {
   // Programmatic scrolling
   // -----------------------------------------------------------------------
 
-  /**
-   * Scroll to a specific offset.
-   *
-   * @param x        Target X offset.
-   * @param y        Target Y offset.
-   * @param animated Whether to animate (spring) or jump instantly.
-   */
   scrollTo(x: number, y: number, animated: boolean = true): this {
-    this._controller.scrollTo(x, y, animated);
+    if (hasCppScroll && this._scrollEngineId) {
+      __scrollTo(this._scrollEngineId, x, y, animated);
+    }
     return this;
-  }
-
-  /** Access the underlying ScrollController for advanced use. */
-  get controller(): ScrollController {
-    return this._controller;
   }
 
   // -----------------------------------------------------------------------
@@ -279,22 +309,14 @@ export class ScrollViewBuilder extends ComponentBase {
  *
  * @example
  * ```ts
- * // Vertical scroll
  * ScrollView(child1, child2, child3)
  *   .flex(1)
  *   .backgroundColor('#0F172A');
  *
- * // Horizontal carousel with snap
  * ScrollView(...cards)
  *   .horizontal()
- *   .showsScrollIndicator(false)
  *   .snapToInterval(320)
  *   .decelerationRate('fast');
- *
- * // Paging
- * ScrollView(...pages)
- *   .pagingEnabled()
- *   .bounces(false);
  * ```
  */
 export function ScrollView(...children: ComponentChild[]): ScrollViewBuilder {

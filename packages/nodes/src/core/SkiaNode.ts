@@ -24,6 +24,43 @@ import type {
 import { dirtyTracker } from "./DirtyTracker";
 
 // ---------------------------------------------------------------------------
+// C++ node tree bridge (JSI globals registered by SkiaNodeTree.h)
+// ---------------------------------------------------------------------------
+
+declare function __nodeCreate(type: string): number;
+declare function __nodeSetProp(nodeId: number, key: string, value: any): void;
+declare function __nodeAppendChild(parentId: number, childId: number): void;
+declare function __nodeRemoveChild(parentId: number, childId: number): void;
+declare function __nodeSetLayout(
+  nodeId: number,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  absX: number,
+  absY: number,
+): void;
+declare function __nodeSetRoot(nodeId: number): void;
+declare function __touchSetCallback(
+  nodeId: number,
+  event: string,
+  callback: Function,
+): void;
+
+// Check if C++ node tree is available
+const hasCppNodeTree = typeof (globalThis as any).__nodeCreate === "function";
+const hasCppTouchDispatcher =
+  typeof (globalThis as any).__touchSetCallback === "function";
+
+/** Touch event keys that need to be forwarded to C++ TouchDispatcher. */
+const TOUCH_EVENT_KEYS = new Set([
+  "onPress",
+  "onPressIn",
+  "onPressOut",
+  "onLongPress",
+]);
+
+// ---------------------------------------------------------------------------
 // ID counter
 // ---------------------------------------------------------------------------
 
@@ -71,9 +108,17 @@ export class SkiaNode {
   opacity: number = 1;
   touchable: boolean = false;
 
+  // --- C++ mirror node ID ---
+  cppNodeId: number = 0;
+
   constructor(type: SkiaNodeType) {
     this.id = nextId++;
     this.type = type;
+
+    // Create mirror node in C++ tree
+    if (hasCppNodeTree) {
+      this.cppNodeId = __nodeCreate(type);
+    }
   }
 
   // --- Tree operations ---
@@ -91,6 +136,12 @@ export class SkiaNode {
     child.depth = this.depth + 1;
     this.children.push(child);
     this._updateChildDepths(child);
+
+    // Sync to C++ tree
+    if (hasCppNodeTree && this.cppNodeId && child.cppNodeId) {
+      __nodeAppendChild(this.cppNodeId, child.cppNodeId);
+    }
+
     this.markDirty("children");
   }
 
@@ -130,6 +181,12 @@ export class SkiaNode {
     this.children.splice(idx, 1);
     child.parent = null;
     child.depth = 0;
+
+    // Sync to C++ tree
+    if (hasCppNodeTree && this.cppNodeId && child.cppNodeId) {
+      __nodeRemoveChild(this.cppNodeId, child.cppNodeId);
+    }
+
     this.markDirty("children");
   }
 
@@ -142,6 +199,22 @@ export class SkiaNode {
   ): void {
     if (this.props[key] === value) return; // no-op if same value
     this.props[key] = value;
+
+    // Sync to C++ tree (skip functions — they're JS callbacks)
+    if (hasCppNodeTree && this.cppNodeId && typeof value !== "function") {
+      __nodeSetProp(this.cppNodeId, key as string, value);
+    }
+
+    // Forward touch callbacks to C++ TouchDispatcher
+    if (
+      hasCppTouchDispatcher &&
+      this.cppNodeId &&
+      typeof value === "function" &&
+      TOUCH_EVENT_KEYS.has(key as string)
+    ) {
+      __touchSetCallback(this.cppNodeId, key as string, value as Function);
+    }
+
     this.markDirty("prop");
   }
 

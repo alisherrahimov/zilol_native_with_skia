@@ -33,7 +33,7 @@ import {
   EDGE_LEFT,
   Gutter,
 } from "./constants";
-import { getTextMeasurer, MeasureMode } from "./TextMeasure";
+import { getTextMeasurer, parseFontWeight, MeasureMode } from "./TextMeasure";
 
 // ---------------------------------------------------------------------------
 // YogaBridge
@@ -404,7 +404,7 @@ export class YogaBridge {
           (props.text as string) ?? "",
           (props.fontSize as number) ?? 14,
           props.fontFamily as string | undefined,
-          props.fontWeight as string | undefined,
+          parseFontWeight(props.fontWeight as string | number | undefined),
           width,
           widthMode as MeasureMode,
           height,

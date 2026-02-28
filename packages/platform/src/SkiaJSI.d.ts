@@ -58,11 +58,18 @@ declare function __skiaLoadImageFromURL(
  * @param text The text string
  * @param fontSize Font size in points
  * @param maxWidth Maximum width for wrapping (0 = unlimited)
+ * @param lineHeight Optional line height in points (0 = auto)
+ * @param fontWeight Optional font weight (100–900)
+ * @param maxLines Optional max lines for truncation (0 = unlimited)
  */
 declare function __skiaMeasureText(
   text: string,
   fontSize: number,
   maxWidth: number,
+  lineHeight?: number,
+  fontWeight?: number,
+  maxLines?: number,
+  widthMode?: number,
 ): { width: number; height: number };
 
 /** Register a custom font file for use with drawText. */

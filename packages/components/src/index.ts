@@ -45,6 +45,16 @@ export { Pressable, PressableBuilder } from "./Pressable";
 export { Image, ImageBuilder } from "./Image";
 export { ScrollView, ScrollViewBuilder } from "./ScrollView";
 export {
+  Gesture,
+  GestureBuilder,
+  PanGesture,
+  PinchGesture,
+  RotationGesture,
+  TapGesture,
+} from "./Gesture";
+export type { GestureEvent, GestureCallback } from "./Gesture";
+export { GestureDetector } from "./GestureDetector";
+export {
   ActivityIndicator,
   ActivityIndicatorBuilder,
 } from "./ActivityIndicator";

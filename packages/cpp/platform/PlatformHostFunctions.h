@@ -15,5 +15,8 @@ namespace platform {
 /// Register platform info host functions.
 void registerHostFunctions(facebook::jsi::Runtime &rt);
 
+/// Get the pixel ratio (set from Swift during initialization).
+float getPixelRatio();
+
 } // namespace platform
 } // namespace zilol

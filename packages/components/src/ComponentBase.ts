@@ -159,6 +159,11 @@ export abstract class ComponentBase implements Component {
     return this;
   }
 
+  flexWrap(value: Val<"nowrap" | "wrap" | "wrap-reverse">): this {
+    setPropReactive(this.node, "flexWrap" as any, value as any);
+    return this;
+  }
+
   // -----------------------------------------------------------------------
   // Spacing — Padding
   // -----------------------------------------------------------------------
@@ -195,6 +200,63 @@ export abstract class ComponentBase implements Component {
 
   paddingVertical(value: Val<number>): this {
     setPropReactive(this.node, "paddingVertical", value as any);
+    return this;
+  }
+
+  // -----------------------------------------------------------------------
+  // Safe Area
+  // -----------------------------------------------------------------------
+
+  /**
+   * Apply safe area insets as padding to avoid the notch, home indicator, etc.
+   *
+   * @param edges - Which edges to apply. `"all"` | `"top"` | `"bottom"` | `"horizontal"` | `"vertical"` or omit for all.
+   *
+   * @example
+   * ```ts
+   * View(...).safeArea();           // all edges
+   * View(...).safeArea("top");      // only status bar
+   * View(...).safeArea("bottom");   // only home indicator
+   * ```
+   */
+  safeArea(
+    edges?:
+      | "all"
+      | "top"
+      | "bottom"
+      | "left"
+      | "right"
+      | "horizontal"
+      | "vertical",
+  ): this {
+    const insets = (globalThis as any).__getSafeAreaInsets?.() ?? {
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+    };
+    const edge = edges ?? "all";
+
+    if (edge === "all") {
+      if (insets.top > 0) this.paddingTop(insets.top);
+      if (insets.bottom > 0) this.paddingBottom(insets.bottom);
+      if (insets.left > 0) this.paddingLeft(insets.left);
+      if (insets.right > 0) this.paddingRight(insets.right);
+    } else if (edge === "top") {
+      if (insets.top > 0) this.paddingTop(insets.top);
+    } else if (edge === "bottom") {
+      if (insets.bottom > 0) this.paddingBottom(insets.bottom);
+    } else if (edge === "left") {
+      if (insets.left > 0) this.paddingLeft(insets.left);
+    } else if (edge === "right") {
+      if (insets.right > 0) this.paddingRight(insets.right);
+    } else if (edge === "horizontal") {
+      if (insets.left > 0) this.paddingLeft(insets.left);
+      if (insets.right > 0) this.paddingRight(insets.right);
+    } else if (edge === "vertical") {
+      if (insets.top > 0) this.paddingTop(insets.top);
+      if (insets.bottom > 0) this.paddingBottom(insets.bottom);
+    }
     return this;
   }
 
@@ -301,6 +363,95 @@ export abstract class ComponentBase implements Component {
 
   overflow(value: Val<"visible" | "hidden" | "scroll">): this {
     setPropReactive(this.node, "overflow", value as any);
+    return this;
+  }
+
+  // -----------------------------------------------------------------------
+  // Transform
+  // -----------------------------------------------------------------------
+
+  /** Rotate in degrees. */
+  rotate(value: Val<number>): this {
+    setPropReactive(this.node, "rotation" as any, value as any);
+    return this;
+  }
+
+  /** Uniform scale. */
+  scale(value: Val<number>): this {
+    setPropReactive(this.node, "scale" as any, value as any);
+    return this;
+  }
+
+  scaleX(value: Val<number>): this {
+    setPropReactive(this.node, "scaleX" as any, value as any);
+    return this;
+  }
+
+  scaleY(value: Val<number>): this {
+    setPropReactive(this.node, "scaleY" as any, value as any);
+    return this;
+  }
+
+  translateX(value: Val<number>): this {
+    setPropReactive(this.node, "translateX" as any, value as any);
+    return this;
+  }
+
+  translateY(value: Val<number>): this {
+    setPropReactive(this.node, "translateY" as any, value as any);
+    return this;
+  }
+
+  // -----------------------------------------------------------------------
+  // Per-side borders
+  // -----------------------------------------------------------------------
+
+  borderTopWidth(value: Val<number>): this {
+    setPropReactive(this.node, "borderTopWidth" as any, value as any);
+    return this;
+  }
+
+  borderRightWidth(value: Val<number>): this {
+    setPropReactive(this.node, "borderRightWidth" as any, value as any);
+    return this;
+  }
+
+  borderBottomWidth(value: Val<number>): this {
+    setPropReactive(this.node, "borderBottomWidth" as any, value as any);
+    return this;
+  }
+
+  borderLeftWidth(value: Val<number>): this {
+    setPropReactive(this.node, "borderLeftWidth" as any, value as any);
+    return this;
+  }
+
+  borderTopColor(value: Val<string>): this {
+    setPropReactive(this.node, "borderTopColor" as any, value as any);
+    return this;
+  }
+
+  borderRightColor(value: Val<string>): this {
+    setPropReactive(this.node, "borderRightColor" as any, value as any);
+    return this;
+  }
+
+  borderBottomColor(value: Val<string>): this {
+    setPropReactive(this.node, "borderBottomColor" as any, value as any);
+    return this;
+  }
+
+  borderLeftColor(value: Val<string>): this {
+    setPropReactive(this.node, "borderLeftColor" as any, value as any);
+    return this;
+  }
+
+  // -----------------------------------------------------------------------
+  // zIndex
+  // -----------------------------------------------------------------------
+
+  zIndex(value: Val<number>): this {
+    setPropReactive(this.node, "zIndex" as any, value as any);
     return this;
   }
 

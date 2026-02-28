@@ -112,6 +112,27 @@ export class TextBuilder extends ComponentBase {
     return this;
   }
 
+  backgroundColor(value: Val<string>): this {
+    setProp(this.node, "backgroundColor", value);
+    return this;
+  }
+
+  /** Set border radius for the text background. */
+  borderRadius(
+    value: Val<
+      | number
+      | {
+          topLeft?: number;
+          topRight?: number;
+          bottomRight?: number;
+          bottomLeft?: number;
+        }
+    >,
+  ): this {
+    setProp(this.node, "borderRadius", value);
+    return this;
+  }
+
   // -----------------------------------------------------------------------
   // Text layout
   // -----------------------------------------------------------------------
@@ -141,6 +162,33 @@ export class TextBuilder extends ComponentBase {
     this.maxLines(lines);
     this.textOverflow("ellipsis");
     return this;
+  }
+
+  // -----------------------------------------------------------------------
+  // Spacing & Decoration
+  // -----------------------------------------------------------------------
+
+  letterSpacing(value: Val<number>): this {
+    setProp(this.node, "letterSpacing", value);
+    return this;
+  }
+
+  /** Set text decoration: 'underline', 'line-through', 'overline', 'none'. */
+  textDecoration(
+    value: Val<"underline" | "line-through" | "overline" | "none">,
+  ): this {
+    setProp(this.node, "textDecoration", value);
+    return this;
+  }
+
+  /** Shorthand for `.textDecoration('underline')`. */
+  underline(): this {
+    return this.textDecoration("underline");
+  }
+
+  /** Shorthand for `.textDecoration('line-through')`. */
+  strikethrough(): this {
+    return this.textDecoration("line-through");
   }
 }
 

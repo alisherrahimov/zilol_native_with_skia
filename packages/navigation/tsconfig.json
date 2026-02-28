@@ -18,9 +18,9 @@
         "composite": true
     },
     "references": [
-        {
-            "path": "../runtime"
-        }
+        { "path": "../runtime" },
+        { "path": "../components" },
+        { "path": "../animation" }
     ],
     "include": [
         "src/**/*.ts"

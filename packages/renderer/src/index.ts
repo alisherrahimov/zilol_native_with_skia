@@ -3,11 +3,9 @@
  *
  * Zilol Native — Skia Render Pipeline
  *
- * Defines the render pipeline: damage rect collection, display list
- * caching, draw dispatchers, paint caching, and frame lifecycle.
- *
- * Uses opaque Skia interfaces for testability — the actual Skia
- * objects are injected by the platform layer.
+ * Rendering is now handled by C++ (SkiaNodeRenderer.h).
+ * This package retains damage rect collection, paint caching,
+ * and type definitions.
  */
 
 // Types
@@ -32,28 +30,15 @@ export type {
   ClearCommand,
 } from "./types";
 
-// Pipeline
+// Pipeline (damage rects only — DisplayList and RenderLoop removed)
 export {
   collectDamageRects,
   mergeRects,
   intersects,
   unionRects,
-  DisplayList,
-  RenderLoop,
   Compositor,
 } from "./pipeline";
-export type { CommandExecutor, PlatformViewFrame } from "./pipeline";
-
-// Draw
-export {
-  drawNode,
-  drawView,
-  drawText,
-  drawImage,
-  drawScroll,
-  setShowRedraws,
-  _advanceDebugColor,
-} from "./draw";
+export type { PlatformViewFrame } from "./pipeline";
 
 // Paint
 export {

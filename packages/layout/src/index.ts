@@ -28,6 +28,7 @@ export { syncLayoutResults } from "./LayoutSync";
 export {
   setTextMeasurer,
   getTextMeasurer,
+  parseFontWeight,
   _resetTextMeasurer,
   MeasureMode,
 } from "./TextMeasure";

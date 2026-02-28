@@ -13,6 +13,11 @@
 #include "yoga/YogaHostFunctions.h"
 #include "skia/SkiaHostFunctions.h"
 #include "skia/SkiaRenderer.h"
+#include "skia/SkiaNodeTree.h"
+#include "skia/SkiaNodeRenderer.h"
+#include "gestures/ScrollEngine.h"
+#include "gestures/TouchDispatcher.h"
+#include "animation/AnimationTicker.h"
 #include "platform/PlatformHostFunctions.h"
 
 // Hermes
@@ -41,6 +46,11 @@ namespace zilol {
 
 static std::unique_ptr<jsi::Runtime> sRuntime;
 static std::unique_ptr<skia::SkiaRenderer> sRenderer;
+static std::unique_ptr<skia::SkiaNodeTree> sNodeTree;
+static std::unique_ptr<skia::SkiaNodeRenderer> sNodeRenderer;
+static std::unique_ptr<gestures::ScrollEngineManager> sScrollManager;
+static std::unique_ptr<animation::AnimationTicker> sAnimTicker;
+static std::unique_ptr<gestures::TouchDispatcher> sTouchDispatcher;
 
 // Frame callbacks: map of ID → JS callback
 static std::mutex sFrameMutex;
@@ -102,6 +112,25 @@ void initialize(std::unique_ptr<skia::SkiaRenderer> renderer) {
     yoga::registerHostFunctions(rt);
     skia::registerHostFunctions(rt, sRenderer.get());
     platform::registerHostFunctions(rt);
+
+    // 2c. Create C++ node tree and renderer, register JSI API
+    sNodeTree = std::make_unique<skia::SkiaNodeTree>();
+    sNodeRenderer = std::make_unique<skia::SkiaNodeRenderer>();
+    sNodeRenderer->setTextRenderer(&skia::getTextRenderer());
+    skia::registerNodeTreeHostFunctions(rt, sNodeTree.get());
+
+    // 2d. Create scroll engine manager, register JSI API
+    sScrollManager = std::make_unique<gestures::ScrollEngineManager>();
+    gestures::registerScrollEngineHostFunctions(rt, sScrollManager.get(), sNodeTree.get());
+
+    // 2e. Create animation ticker, register JSI API
+    sAnimTicker = std::make_unique<animation::AnimationTicker>();
+    animation::registerAnimationHostFunctions(rt, sAnimTicker.get(), sNodeTree.get());
+
+    // 2f. Create touch dispatcher, register JSI API
+    sTouchDispatcher = std::make_unique<gestures::TouchDispatcher>();
+    sTouchDispatcher->setNodeTree(sNodeTree.get());
+    gestures::registerTouchDispatcherHostFunctions(rt, sTouchDispatcher.get());
 
     // 2b. Register console object (Hermes doesn't provide it)
     {
@@ -440,9 +469,6 @@ void onVsync(double timestampMs) {
         std::swap(callbacks, sFrameCallbacks);
     }
 
-    // DIRTY-FLAG: skip rendering when no JS requested a frame
-    if (callbacks.empty()) return;
-
     // Get the renderer
     auto *renderer = sRenderer.get();
     if (!renderer || !renderer->isReady()) return;
@@ -459,17 +485,34 @@ void onVsync(double timestampMs) {
             fn.call(*sRuntime, jsi::Value(timestampMs));
         } catch (const jsi::JSError &e) {
             fprintf(stderr, "[ZilolRuntime] VSYNC JS ERROR: %s\n", e.what());
-            std::ofstream errFile("/tmp/zilol_vsync_error.log");
-            if (errFile.is_open()) {
-                errFile << e.what();
-                errFile.close();
-            }
         } catch (const std::exception &e) {
             fprintf(stderr, "[ZilolRuntime] VSYNC ERROR: %s\n", e.what());
-            std::ofstream errFile("/tmp/zilol_vsync_error.log");
-            if (errFile.is_open()) {
-                errFile << e.what();
-                errFile.close();
+        }
+    }
+
+    // ── C++ SCROLL ENGINE TICK ───────────────────────────────
+    if (sScrollManager) {
+        sScrollManager->tickAll(timestampMs);
+    }
+
+    // ── C++ ANIMATION TICK ─────────────────────────────────
+    if (sAnimTicker && sAnimTicker->hasActive()) {
+        sAnimTicker->tickAll(static_cast<float>(timestampMs), sRuntime.get());
+    }
+
+    // ── C++ NODE TREE RENDERING ──────────────────────────────
+    if (sNodeTree && sNodeRenderer) {
+        auto *root = sNodeTree->getRoot();
+        if (root) {
+            auto *canvas = renderer->getCanvas();
+            if (canvas) {
+                // Clear canvas — Metal drawable has undefined initial content
+                canvas->clear(SK_ColorBLACK);
+                canvas->save();
+                float scale = platform::getPixelRatio();
+                canvas->scale(scale, scale);
+                sNodeRenderer->render(canvas, root);
+                canvas->restore();
             }
         }
     }
@@ -483,13 +526,21 @@ void onVsync(double timestampMs) {
 // ---------------------------------------------------------------------------
 
 void onTouch(int phase, float x, float y, int pointerId) {
-    if (!sRuntime || !sTouchHandler) return;
+    if (!sRuntime) return;
 
-    sTouchHandler->call(*sRuntime,
-        jsi::Value(phase),
-        jsi::Value(static_cast<double>(x)),
-        jsi::Value(static_cast<double>(y)),
-        jsi::Value(pointerId));
+    // Dispatch to C++ TouchDispatcher (hit testing + press callbacks)
+    if (sTouchDispatcher) {
+        sTouchDispatcher->dispatchTouch(phase, x, y, pointerId, *sRuntime);
+    }
+
+    // Also forward to legacy JS touch handler if registered
+    if (sTouchHandler) {
+        sTouchHandler->call(*sRuntime,
+            jsi::Value(phase),
+            jsi::Value(static_cast<double>(x)),
+            jsi::Value(static_cast<double>(y)),
+            jsi::Value(pointerId));
+    }
 }
 
 } // namespace zilol

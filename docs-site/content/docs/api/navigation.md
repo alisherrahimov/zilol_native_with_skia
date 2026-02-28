@@ -1,92 +1,209 @@
 ---
 title: Navigation
-description: Native navigation with stack and tab navigators powered by UINavigationController and UITabBarController.
+description: Imperative stack navigation — push, pop, slide transitions, and swipe-back.
 order: 14
 ---
 
 ## Overview
 
-Zilol Native navigation uses **real native view controllers** under the hood — `UINavigationController` on iOS and their equivalents on Android. This ensures native gestures, transitions, and system integration.
+`createRouter` builds a zero-overhead navigator. Navigation state is a plain array — no signals, no effects, no reactive subscriptions. Only 4 animation signals exist (translateX × 2, opacity × 2) for smooth 60fps transitions driven by the C++ animation loop.
 
-## Stack Navigator
+## Quick Start
 
 ```typescript
-import { createStackNavigator, useNavigation } from "@zilol-native/navigation";
+import { createRouter } from "@zilol-native/navigation";
+import { runApp } from "@zilol-native/platform";
 
-const Stack = createStackNavigator();
+const router = createRouter({
+  Home: HomeScreen,
+  Details: DetailsScreen,
+});
 
-function App() {
-  return Stack.Navigator({
-    screens: [
-      Stack.Screen("Home", HomeScreen, {
-        title: "Home",
-      }),
-      Stack.Screen("Details", DetailsScreen, {
-        title: "Details",
-      }),
-    ],
-  });
-}
+runApp(() => router.Navigator({ initialRoute: "Home" }).node);
+```
+
+## Defining Screens
+
+A screen is a function that receives params and returns a `Component`:
+
+```typescript
+// Simple — just a function
+const router = createRouter({
+  Home: () =>
+    View(Text("Home").fontSize(24).bold().color("#FFF"))
+      .flex(1)
+      .alignItems("center")
+      .justifyContent("center"),
+});
+
+// With options — object with component + options
+const router = createRouter({
+  Home: {
+    component: HomeScreen,
+    options: {
+      title: "Home",
+      headerStyle: { backgroundColor: "#1E293B" },
+      headerTintColor: "#FFF",
+    },
+  },
+});
 ```
 
 ## Navigating
 
 ```typescript
-function HomeScreen() {
-  const nav = useNavigation();
+// Push a screen
+router.push("Details", { id: 42 });
 
-  return View().children([
-    Pressable(() => nav.push("Details", { id: 42 })).child(
-      Text("Go to Details"),
-    ),
-  ]);
-}
+// Pop back
+router.pop();
+
+// Pop all the way to root
+router.popToRoot();
+
+// Replace current screen (no animation)
+router.replace("Settings");
+
+// Check if back is possible
+if (router.canGoBack()) { ... }
+
+// Get current screen name
+router.currentScreen(); // "Details"
 ```
 
-## Tab Navigator
+## Screen Params
+
+Params are passed to the screen function:
 
 ```typescript
-import { createBottomTabNavigator } from "@zilol-native/navigation";
-
-const Tab = createBottomTabNavigator();
-
-function App() {
-  return Tab.Navigator({
-    screens: [
-      Tab.Screen("Home", HomeScreen, {
-        tabBarIcon: "🏠",
-        tabBarLabel: "Home",
-      }),
-      Tab.Screen("Profile", ProfileScreen, {
-        tabBarIcon: "👤",
-        tabBarLabel: "Profile",
-      }),
-    ],
-  });
+function DetailsScreen(params: { id: number }) {
+  return View(
+    Text(`Item #${params.id}`).fontSize(24).color("#FFF"),
+    Pressable(Text("Back").color("#FFF")).onPress(() => router.pop()),
+  )
+    .flex(1)
+    .alignItems("center")
+    .justifyContent("center");
 }
+
+router.push("Details", { id: 42 });
 ```
 
-## Navigation Hooks
+## Safe Area
+
+Navigation screens automatically respect the notch and home indicator. `ScreenContainer` applies `safeArea("top")` to the header area and `safeArea("bottom")` to the content area — no extra code needed.
+
+For custom layouts without the navigation header, use `.safeArea()` directly:
 
 ```typescript
-// Get the navigation object
-const nav = useNavigation();
+View(content).flex(1).safeArea();
+```
 
-// Get current route params
-const route = useRoute<{ id: number }>();
+## Transitions
 
-// Run effect when screen is focused
-useFocusEffect(() => {
-  fetchData(route.params.id);
+```typescript
+const router = createRouter(screens, {
+  transition: "slide", // "slide" | "fade" | "none"
+  transitionDuration: 250, // ms (default: 250)
+  gestureBack: true, // swipe-back from left edge
 });
 ```
 
-## How It Works
+| Type    | Push                                                 | Pop          |
+| ------- | ---------------------------------------------------- | ------------ |
+| `slide` | New screen slides in from right, old shifts left 30% | Reverse      |
+| `fade`  | New screen fades in, old fades out                   | Reverse      |
+| `none`  | Instant swap                                         | Instant swap |
 
-The navigation system uses the C++ JSI bridge to communicate with native view controllers:
+## Header Bar
 
-- `__navigationPush(screenId, props)` — Push a new screen
-- `__navigationPop()` — Pop the current screen
-- `__navigationJumpTo(tabId)` — Switch tab
+Each screen can configure its header:
 
-Each screen's Skia canvas is rendered inside its own native view controller, getting native transitions and gesture-driven back navigation for free.
+```typescript
+const router = createRouter({
+  Home: {
+    component: HomeScreen,
+    options: {
+      title: "Home",
+      headerShown: true, // default: true
+      headerStyle: {
+        backgroundColor: "#1E293B", // header background
+      },
+      headerTintColor: "#FFF", // title + back text color
+      headerLeft: () => CustomButton(),
+      headerRight: () => SettingsIcon(),
+    },
+  },
+});
+```
+
+The back button appears automatically when `canGoBack()` is true.
+
+## Swipe-Back Gesture
+
+Swipe from the left edge to go back (iOS-style). The transition follows your finger and completes or cancels based on:
+
+- **Progress > 30%** → completes pop
+- **Velocity > 500px/s** → completes pop (fast swipe)
+- Otherwise → springs back with cancel animation
+
+Disable with `gestureBack: false`.
+
+## API Reference
+
+### `createRouter(screens, config?)`
+
+| Param                       | Type                                                 | Description                               |
+| --------------------------- | ---------------------------------------------------- | ----------------------------------------- |
+| `screens`                   | `Record<string, ScreenFn \| { component, options }>` | Screen definitions                        |
+| `config.transition`         | `"slide" \| "fade" \| "none"`                        | Transition type (default: `"slide"`)      |
+| `config.transitionDuration` | `number`                                             | Animation duration in ms (default: `250`) |
+| `config.gestureBack`        | `boolean`                                            | Enable swipe-back (default: `true`)       |
+
+### Router Methods
+
+| Method                     | Description                    |
+| -------------------------- | ------------------------------ |
+| `push(screen, params?)`    | Push a new screen              |
+| `pop()`                    | Go back one screen             |
+| `popToRoot()`              | Go back to the first screen    |
+| `replace(screen, params?)` | Replace current (no animation) |
+| `canGoBack()`              | `true` if stack depth > 1      |
+| `currentScreen()`          | Name of the top screen         |
+| `Navigator(opts?)`         | Build the navigator component  |
+
+### Screen Options
+
+| Option            | Type                  | Default     | Description             |
+| ----------------- | --------------------- | ----------- | ----------------------- |
+| `title`           | `string`              | Screen name | Header title            |
+| `headerShown`     | `boolean`             | `true`      | Show/hide header        |
+| `headerStyle`     | `{ backgroundColor }` | `#1E293B`   | Header styling          |
+| `headerTintColor` | `string`              | `#F8FAFC`   | Title + back text color |
+| `headerLeft`      | `() => Component`     | —           | Custom left element     |
+| `headerRight`     | `() => Component`     | —           | Custom right element    |
+
+## Architecture
+
+```
+push("Details", { id: 42 })
+  │
+  ├─ mountPrev(current)      mount current screen as prev layer
+  ├─ stack.push(entry)        plain array, no signals
+  ├─ mountCurrent(new)        build + appendChild + attachYoga
+  └─ slideIn()                animate translateX (0→screenWidth, 250ms)
+       │
+       └─ onFinish
+            ├─ unmountPrev()  removeChild + detachYoga (free memory)
+            └─ animating = false
+
+pop()
+  │
+  ├─ mountPrev(behind)        build behind screen in prev layer
+  └─ slideOut()               animate current out to right
+       │
+       └─ onFinish
+            ├─ stack.pop()
+            ├─ move prev node → current layer  (no rebuild, no blink)
+            └─ animating = false
+```

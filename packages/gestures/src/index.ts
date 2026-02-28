@@ -1,33 +1,11 @@
 /**
  * @zilol-native/gestures — Gesture recognition and scroll handling.
  *
- * This package provides:
- *  - Scroll physics (deceleration, rubber-band, bounce, snap, paging)
- *  - Velocity tracking
- *  - ScrollController for touch-driven scrolling
+ * Scroll physics, velocity tracking, and ScrollController have been
+ * moved to C++ (packages/cpp/gestures/ScrollEngine.h).
  *
- * Future modules (arena, hit, recognizers) will be added here.
+ * This package is retained for future TS-level gesture recognizers
+ * (tap, pan, long-press, etc.) that build on top of the C++ touch dispatcher.
  */
 
-export {
-  ScrollController,
-  VelocityTracker,
-  decelerationStep,
-  springStep,
-  rubberBandClamp,
-  findSnapTarget,
-  findPageTarget,
-  clamp,
-  resolveDecelerationRate,
-  DECELERATION_RATE_NORMAL,
-  DECELERATION_RATE_FAST,
-  VELOCITY_THRESHOLD,
-  MAX_RUBBER_BAND,
-  RUBBER_BAND_COEFF,
-} from "./scroll/index";
-
-export type {
-  ScrollOffset,
-  DecelerationState,
-  SpringState,
-} from "./scroll/index";
+// Future gesture recognizers will be exported here.

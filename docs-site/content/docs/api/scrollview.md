@@ -1,12 +1,12 @@
 ---
 title: ScrollView
+description: Scrollable container with C++ physics — rubber-band overscroll, deceleration, snap, and paging.
 order: 10
 ---
 
-# ScrollView
+## Overview
 
-Scrollable container with native-feel physics — rubber-band overscroll,
-deceleration fling, snap-to-interval, and paging.
+`ScrollView` is a scrollable container backed by a **C++ ScrollEngine** that provides iOS-style scroll physics — rubber-band overscroll, velocity-based fling, snap-to-interval, and paging. Touch events and physics run in C++ for 60fps performance.
 
 ## Basic Usage
 
@@ -14,7 +14,7 @@ deceleration fling, snap-to-interval, and paging.
 import { ScrollView, View, Text } from "@zilol-native/components";
 
 // Vertical scroll (default)
-const list = ScrollView(
+ScrollView(
   ...items.map((item) =>
     View(Text(item.title).color("#FFF"))
       .padding(16)
@@ -82,14 +82,11 @@ sv.scrollTo(0, 500);
 
 // Instant jump
 sv.scrollTo(0, 500, false);
-
-// Access controller for advanced use
-sv.controller.scrollTo(100, 0, true);
 ```
 
 ## Scroll Physics
 
-ScrollView uses iOS-style scroll physics implemented in pure TypeScript:
+ScrollView uses iOS-style scroll physics implemented in the **C++ ScrollEngine**:
 
 | Phase        | Behavior                                           |
 | ------------ | -------------------------------------------------- |
@@ -133,10 +130,9 @@ ScrollView uses iOS-style scroll physics implemented in pure TypeScript:
 
 ### Programmatic
 
-| Method                       | Description                        |
-| ---------------------------- | ---------------------------------- |
-| `.scrollTo(x, y, animated?)` | Animate/jump to offset             |
-| `.controller`                | Access `ScrollController` instance |
+| Method                       | Description            |
+| ---------------------------- | ---------------------- |
+| `.scrollTo(x, y, animated?)` | Animate/jump to offset |
 
 ### Visual
 
@@ -159,12 +155,10 @@ All standard layout modifiers: `.flex()`, `.width()`, `.height()`,
 ┌───────────────────────────────────┐
 │   ScrollViewBuilder (component)   │ ← chainable API
 ├───────────────────────────────────┤
-│   Touch wiring (onTouchStart →)   │ ← EventDispatch bubbles → ScrollController
+│   Touch wiring (onTouchStart →)   │ ← forwards to C++ ScrollEngine
 ├───────────────────────────────────┤
-│   ScrollController (gestures)     │ ← touch → physics lifecycle
-├───────────────────────────────────┤
-│   ScrollPhysics (pure math)       │ ← deceleration, spring, rubber-band
-│   VelocityTracker (estimation)    │ ← rolling-window weighted velocity
+│   C++ ScrollEngine (physics)      │ ← velocity tracking, spring, fling
+│   ScrollEngine.h                  │ ← rubber-band, snap, deceleration
 ├───────────────────────────────────┤
 │   SkiaNode type="scroll"          │ ← scrollX/scrollY props
 ├───────────────────────────────────┤
@@ -173,33 +167,9 @@ All standard layout modifiers: `.flex()`, `.width()`, `.height()`,
 └───────────────────────────────────┘
 ```
 
-## Internal Details
+## Viewport Culling
 
-### Touch Event Wiring
-
-Scroll nodes receive touch events via the `EventDispatch` bubbling system:
-
-1. Native sends raw touch → `EventDispatcher.handleTouch()`
-2. `HitTest` finds frontmost touchable node (scroll nodes are touchable via `type === "scroll"` check)
-3. Events fire on the hit target, then **bubble up** through ancestors
-4. When they reach the scroll node, `onTouchStart` / `onTouchMove` / `onTouchEnd` handlers forward to `ScrollController`
-5. `ScrollController` converts touches into scroll physics
-
-### ScrollController Lifecycle
-
-1. **Touch began** → cancel any animation, enter `Dragging` phase
-2. **Touch moved** → compute delta, apply rubber-band if overscrolling, update `scrollX`/`scrollY`
-3. **Touch ended** → compute fling velocity from `VelocityTracker`
-   - If overscrolled → `Bouncing` (spring to boundary)
-   - If paging enabled → `Snapping` (spring to nearest page)
-   - If snap interval → `Snapping` (spring to nearest interval)
-   - Otherwise → `Decelerating` (friction fling)
-4. **Frame loop** → apply physics step per `__skiaRequestFrame` (vsync)
-5. **Settled** → fire `onScrollEnd`, return to `Idle`
-
-### Rendering & Viewport Culling
-
-The `drawScroll` function uses **viewport culling** for performance — only children whose layout positions overlap the visible scroll window emit draw commands:
+The renderer uses **viewport culling** for performance — only children whose layout positions overlap the visible scroll window emit draw commands:
 
 ```
 save()

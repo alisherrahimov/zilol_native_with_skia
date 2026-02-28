@@ -93,6 +93,10 @@ void registerHostFunctions(jsi::Runtime &rt) {
             }));
 }
 
+float getPixelRatio() {
+    return sPixelRatio;
+}
+
 } // namespace platform
 } // namespace zilol
 
